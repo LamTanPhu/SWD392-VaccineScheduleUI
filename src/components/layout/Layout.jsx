@@ -1,71 +1,133 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
+import './layout.css';
 const locations = {
     north: ["Bắc Giang", "Hà Nội", "Hải Phòng", "Yên Bái", "Hải Dương", "Phú Thọ"],
     central: ["Thanh Hóa", "Nghệ An", "Hà Tĩnh", "Quảng Bình", "Huế", "Đà Nẵng"],
     south: ["Hồ Chí Minh", "Bình Dương", "Đồng Nai", "Cần Thơ", "Vũng Tàu", "Long An"]
 };
 
-const Header = () => (
-    <header className="py-6 text-lg border-b">
-        <div className="container mx-auto flex items-center justify-between">
-            <div>Logo</div>
-            <nav className="flex gap-5">
-                <Link to="/">Trang chủ</Link>
-                <Link to="/about">Giới thiệu</Link>
-                <Link to="/vaccines">Các loại vắc xin</Link>
-                <Link to="/packages">Gói vắc xin</Link>
-                <Link to="/pricing">Bảng giá</Link>
-            </nav>
-            <div className="flex items-center gap-3">
-                <Link to="/search">Search</Link>
-                <Link to="/login" className="bg-primary text-white px-3 py-1">Sign In</Link>
-            </div>
-        </div>
-    </header>
-);
+const Header = () => {
+    useEffect(() => {
+        const header = document.querySelector('.header-sticky');
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
-const Footer = () => (
-    <footer className="bg-primary text-lg text-white px-3 pt-2 pb-5">
-        <div className="container mx-auto">
-            <div>
-                <div>Logo</div>
-                <p className="font-bold">VACCINE SCHEDULE FOR KIDS</p>
-                <span className="text-sm">Mở cửa từ 7:30 - 17:00 (Không nghỉ trưa)</span>
-            </div>
-            <div className="flex justify-between mt-4">
-                {Object.entries(locations).map(([region, cities]) => (
-                    <div key={region}>
-                        <h5 className="font-bold">HỆ THỐNG {region.toUpperCase()}</h5>
-                        <ul className="ml-7 list-disc">
-                            {cities.map((city) => (
-                                <li key={city}>{city}</li>
-                            ))}
-                        </ul>
+    return (
+        <header className="bg-white shadow-sm header-sticky">
+            <div className="container py-3">
+                <div className="d-flex flex-wrap align-items-center justify-content-between">
+                    <div className="col-md-3 mb-2 mb-md-0">
+                        <Link to="/" className="d-flex align-items-center text-decoration-none logo-pulse">
+                            <span className="fs-3 fw-bold text-primary">VaccineVN</span>
+                        </Link>
                     </div>
-                ))}
+                    <nav className="col-md-6 d-flex justify-content-center gap-4">
+                        <Link to="/" className="nav-link fw-medium text-dark nav-hover">Home</Link>
+                        <Link to="/about" className="nav-link fw-medium text-dark nav-hover">About</Link>
+                        <Link to="/vaccines" className="nav-link fw-medium text-dark nav-hover">Vaccines</Link>
+                        <Link to="/packages" className="nav-link fw-medium text-dark nav-hover">Packages</Link>
+                        <Link to="/pricing" className="nav-link fw-medium text-dark nav-hover">Pricing</Link>
+                    </nav>
+                    <div className="col-md-3 d-flex justify-content-end gap-3">
+                        <Link to="/search" className="btn btn-outline-primary btn-grow">
+                            <i className="bi bi-search me-1"></i> Search
+                        </Link>
+                        <div className="dropdown">
+                            <button
+                                className="btn btn-primary btn-grow dropdown-toggle"
+                                type="button"
+                                id="authDropdown"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                Account
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
+                                <li>
+                                    <Link to="/auth?mode=signin" className="dropdown-item">Sign In</Link>
+                                </li>
+                                <li>
+                                    <Link to="/auth?mode=signup" className="dropdown-item">Sign Up</Link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <hr className="mt-3 mb-3" />
-            <div className="flex justify-between">
-                <div className="flex flex-col">
-                    <Link to="/privacy">Chính sách bảo mật</Link>
-                    <Link to="/survey">Khảo sát tiêm chủng</Link>
-                    <Link to="/payment-policy">Chính sách thanh toán</Link>
+        </header>
+    );
+};
+
+// Rest of Layout (Footer and main structure) remains unchanged
+const Footer = () => (
+    <footer className="bg-primary text-white py-5 footer-fade">
+        <div className="container">
+            <div className="row">
+                <div className="col-md-4 mb-4 mb-md-0">
+                    <Link to="/" className="d-flex align-items-center text-decoration-none mb-3 logo-pulse">
+                        <span className="fs-3 fw-bold text-white">VaccineVN</span>
+                    </Link>
+                    <p className="fw-bold mb-2">VACCINE SCHEDULE FOR KIDS</p>
+                    <p className="small">Open: 7:30 - 17:00 (No lunch break)</p>
+                    <p className="small">Schedule vaccinations easily & safely</p>
                 </div>
-                <div>
-                    <p className="font-bold">CÔNG TY CỔ PHẦN VẮC XIN VIỆT NAM</p>
-                    <a href="mailto:vaccineschedulevip@gmail.com">vaccineschedulevip@gmail.com</a>
+                <div className="col-md-5">
+                    <div className="row">
+                        {Object.entries(locations).map(([region, cities]) => (
+                            <div key={region} className="col-4 mb-4 location-slide">
+                                <h6 className="fw-bold text-uppercase mb-3">{`System ${region === 'north' ? 'North' : region === 'central' ? 'Central' : 'South'}`}</h6>
+                                <ul className="list-unstyled small">
+                                    {cities.map((city) => (
+                                        <li key={city} className="mb-1">
+                                            <Link to={`/locations/${city.toLowerCase().replace(/\s/g, '-')}`} className="text-white text-decoration-none link-hover">
+                                                {city}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+                <div className="col-md-3">
+                    <h6 className="fw-bold mb-3">Quick Links</h6>
+                    <ul className="list-unstyled small">
+                        <li className="mb-2"><Link to="/privacy" className="text-white text-decoration-none link-hover">Privacy Policy</Link></li>
+                        <li className="mb-2"><Link to="/survey" className="text-white text-decoration-none link-hover">Vaccination Survey</Link></li>
+                        <li className="mb-2"><Link to="/payment-policy" className="text-white text-decoration-none link-hover">Payment Policy</Link></li>
+                    </ul>
+                    <h6 className="fw-bold mt-4 mb-2">Contact</h6>
+                    <p className="small mb-0">VIETNAM VACCINE JOINT STOCK COMPANY</p>
+                    <a href="mailto:vaccineschedulevip@gmail.com" className="text-white text-decoration-none small link-hover">
+                        vaccineschedulevip@gmail.com
+                    </a>
+                </div>
+            </div>
+            <hr className="my-4 opacity-25" />
+            <div className="text-center small footer-text-reveal">
+                © {new Date().getFullYear()} VaccineVN. All rights reserved.
             </div>
         </div>
     </footer>
 );
 
 const Layout = ({ children }) => (
-    <div>
+    <div className="d-flex flex-column min-vh-100">
         <Header />
-        <main className="container mx-auto py-6">{children}</main>
+        <main className="flex-grow-1 content-fade">
+            <div className="container py-5">
+                {children}
+            </div>
+        </main>
         <Footer />
     </div>
 );

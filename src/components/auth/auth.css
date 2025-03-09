@@ -1,0 +1,72 @@
+.auth-container {
+    max-width: 680px;
+}
+
+.auth-image {
+    height: 100vh;
+    animation: slideInLeft 0.8s ease-in-out;
+}
+
+/* Custom Toggle Styles */
+.auth-toggle-container {
+    display: flex;
+    justify-content: center;
+}
+
+.auth-toggle {
+    position: relative;
+    display: flex;
+    width: 300px; /* Longer switch */
+    height: 50px; /* Bigger switch */
+    background-color: #e9ecef; /* Light gray background */
+    border-radius: 25px; /* Rounded edges */
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-toggle-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem; /* Larger text */
+    font-weight: 600;
+    color: #6c757d; /* Gray when inactive */
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 1; /* Ensure text is above slider */
+}
+
+.auth-toggle-option.active {
+    color: #fff; /* White when active */
+}
+
+.auth-toggle-slider {
+    position: absolute;
+    width: 50%; /* Half the toggle width */
+    height: 100%;
+    background-color: #0d6efd; /* Bootstrap primary color */
+    border-radius: 25px;
+    transition: transform 0.3s ease;
+}
+
+.auth-toggle-slider.slide-left {
+    transform: translateX(0); /* Left for Sign In */
+}
+
+.auth-toggle-slider.slide-right {
+    transform: translateX(100%); /* Right for Sign Up */
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
