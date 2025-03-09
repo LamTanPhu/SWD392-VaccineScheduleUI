@@ -1,3 +1,6 @@
+import IconCart from "../icons/IconCart";
+import IconSearch from "../icons/IconSearch";
+
 export default function Header() {
     return <header className="py-6 text-lg">
           <div className="container flex items-center justify-between mx-auto">
@@ -11,7 +14,10 @@ export default function Header() {
             </nav>
             <div className="flex items-center justify-end gap-3">
                 <a>
-                    Search
+                    <IconSearch/>
+                </a>
+                <a href="/cart">
+                    <IconCart/>
                 </a>
                 <a href="/login" className="bg-primary text-white px-3 py-1">
                     Sign In

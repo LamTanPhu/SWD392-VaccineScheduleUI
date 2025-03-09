@@ -1,5 +1,5 @@
 export default function Footer() {
-    return <footer className="bg-primary text-lg text-white px-3 pt-2 pb-5">
+    return <footer className="bg-primary text-lg text-white px-3 pt-2 pb-5 mt-20"> 
           <div className="container mx-auto">
             <div>
                 <div>

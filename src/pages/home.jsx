@@ -3,12 +3,14 @@ import Service1 from "./../assets/images/s1.png"
 import Service2 from "./../assets/images/s2.png"
 import Service3 from "./../assets/images/s3.png"
 import Service4 from "./../assets/images/s4.png"
-import Product1 from "./../assets/images/p1_1.png"
-import Product2 from "./../assets/images/p1.png"
-import Product3 from "./../assets/images/p3.png"
-import Product4 from "./../assets/images/p4.png"
-import Product5 from "./../assets/images/p5.png"
-import Product6 from "./../assets/images/p6.png"
+// import Product1 from "./../assets/images/p1_1.png"
+// import Product2 from "./../assets/images/p1.png"
+// import Product3 from "./../assets/images/p3.png"
+// import Product4 from "./../assets/images/p4.png"
+// import Product5 from "./../assets/images/p5.png"
+// import Product6 from "./../assets/images/p6.png"
+import Product from "../product"
+import { PRODUCTS } from "../utils/constants"
 
 export default function Home() {
   return (
@@ -21,42 +23,11 @@ export default function Home() {
           DANH MỤC VẮC XIN TẠI CÁC CƠ SỞ
         </h5>
         <div className="flex justify-between items-start flex-wrap gap-y-3">
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product1} />
+          {PRODUCTS.map((item, index) => (
+            <div className="w-1/3 px-10" key={index}>
+              <Product item={item}/> 
             </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN SỐT XUẤT HUYẾT</p>
-          </div>
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product2} />
-            </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN PHẾ CẦU 23</p>
-          </div>
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product3} />
-            </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN PHẾ CẦU 13</p>
-          </div>
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product4} />
-            </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN ZONA THẦN KINH</p>
-          </div>
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product5} />
-            </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN NÃO MÔ CẦU A</p>
-          </div>
-          <div className="w-1/3 px-10">
-            <div>
-              <img className="w-full h-full object-contain" src={Product6} />
-            </div>
-            <p className="text-center mt-2 font-bold">VẮC XIN NÃO MÔ CẦU B</p>
-          </div>
+          ))}
         </div>
       </div>
       <div className="bg-secondary py-15">
