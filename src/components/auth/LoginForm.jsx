@@ -1,4 +1,3 @@
-// src/components/LoginForm.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
@@ -20,24 +19,63 @@ const LoginForm = () => {
         }));
     };
 
+    // Helper function to decode JWT token (if needed)
+    const decodeToken = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (err) {
+            console.error('Error decoding token:', err);
+            return {};
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
-
         try {
             const response = await api.post('/api/authentication/login', {
                 usernameOrEmail: formData.usernameOrEmail,
                 password: formData.password,
             });
+            console.log('API Response:', response.data);
+    
             const { token } = response.data;
-            localStorage.setItem('authToken', token); // Changed from 'token' to 'authToken' to match App.js
-            if (formData.rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
+            let role;
+    
+            if (token) {
+                const decodedToken = decodeToken(token);
+                role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                console.log('Decoded role from token:', role);
+            } else {
+                console.error('No token in response');
+                role = response.data.role || 'Unknown';
             }
+    
+            console.log('Final role before storage:', role);
+    
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userRole', role);
+            console.log('localStorage after login:', {
+                authToken: localStorage.getItem('authToken'),
+                userRole: localStorage.getItem('userRole'),
+            });
+    
             setSuccess('Login successful! Redirecting...');
             setTimeout(() => {
-                window.location.href = '/'; // Redirect to home page
+                if (role === 'Admin' || role === 'Staff') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/';
+                }
             }, 1500);
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
