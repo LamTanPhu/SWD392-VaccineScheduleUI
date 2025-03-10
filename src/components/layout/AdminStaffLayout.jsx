@@ -8,7 +8,7 @@ const AdminStaffLayout = ({ children }) => {
 
     const handleLogout = () => {
         // Clear token from localStorage (or wherever you store it)
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         navigate('/auth'); // Redirect to auth page
     };
 

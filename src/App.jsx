@@ -9,6 +9,7 @@ import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
+
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
 const AdminVaccines = () => <h1>Vaccines Management</h1>;
@@ -18,43 +19,56 @@ const AdminSettings = () => <h1>Settings</h1>;
 
 // PrivateRoute for admin/staff access only
 const PrivateRoute = ({ children }) => {
-    const token = localStorage.getItem('authToken'); // Check for token
-    const userRole = token ? 'Admin' : null; // Placeholder: replace with JWT role extraction
-    return token && (userRole === 'Admin' || userRole === 'Staff') ? children : <Navigate to="/auth" />;
+    const token = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    console.log('PrivateRoute Check:', { token, userRole });
+    const isAuthorized = token && (userRole === 'Admin' || userRole === 'Staff');
+    console.log('Is Authorized:', isAuthorized);
+    return isAuthorized ? children : <Navigate to="/auth" />;
+};
+// Determine layout based on user role
+const getLayout = (children) => {
+    const token = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+
+    // If no token or not Admin/Staff, use regular Layout
+    if (!token || (userRole !== 'Admin' && userRole !== 'Staff')) {
+        return <Layout>{children}</Layout>;
+    }
+    // If Admin or Staff, use AdminStaffLayout
+    return <AdminStaffLayout>{children}</AdminStaffLayout>;
 };
 
 function App() {
     return (
         <Router>
-            <Layout>
-                <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/about" element={<About />} /> {/* Add About page route */}
-                    {/* Add other public routes here */}
-                    <Route path="/schedule" element={<Schedule />} /> {/* Add Schedule page route here, temporarily*/}
-                    <Route path="/vaccines" element={<VaccineListing />} />
+            <Routes>
+                {/* Public Routes (always use Layout) */}
+                <Route path="/" element={<Layout><HomePage /></Layout>} />
+                <Route path="/auth" element={<Layout><AuthPage /></Layout>} />
+                <Route path="/about" element={<Layout><About /></Layout>} />
+                <Route path="/schedule" element={getLayout(<Schedule />)} />
+                <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
 
-                    {/* Admin/Staff Routes */}
-                    <Route
-                        path="/admin/*"
-                        element={
-                            <PrivateRoute>
-                                <AdminStaffLayout />
-                            </PrivateRoute>
-                        }
-                    >
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route path="vaccines" element={<AdminVaccines />} />
-                        <Route path="schedules" element={<AdminSchedules />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="settings" element={<AdminSettings />} />
-                        {/* Add new admin routes here */}
-                    </Route>
-                </Routes>
-            </Layout>
+                {/* Admin/Staff Routes */}
+                <Route
+                    path="/admin/*"
+                    element={
+                        <PrivateRoute>
+                            <AdminStaffLayout>
+                                <Routes>
+                                    <Route index element={<AdminDashboard />} />
+                                    <Route path="dashboard" element={<AdminDashboard />} />
+                                    <Route path="vaccines" element={<AdminVaccines />} />
+                                    <Route path="schedules" element={<AdminSchedules />} />
+                                    <Route path="users" element={<AdminUsers />} />
+                                    <Route path="settings" element={<AdminSettings />} />
+                                </Routes>
+                            </AdminStaffLayout>
+                        </PrivateRoute>
+                    }
+                />
+            </Routes>
         </Router>
     );
 }

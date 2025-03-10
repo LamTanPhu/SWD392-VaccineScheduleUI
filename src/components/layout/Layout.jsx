@@ -14,26 +14,24 @@ const Header = () => {
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');  // Changed from 'token' to 'authToken'
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                console.log('Decoded Token:', decoded); // Debug: Confirm token structure
-                const currentTime = Date.now() / 1000; // Current time in seconds
+                console.log('Decoded Token:', decoded);
+                const currentTime = Date.now() / 1000;
                 if (decoded.exp < currentTime) {
-                    // Token expired
-                    localStorage.removeItem('token');
+                    localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
                     setIsLoggedIn(false);
                     setUsername('');
                 } else {
                     setIsLoggedIn(true);
-                    // Use the correct claim name from the token
                     const usernameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
                     setUsername(decoded[usernameClaim] || 'User');
                 }
             } catch (error) {
                 console.error('Error decoding token:', error);
-                localStorage.removeItem('token');
+                localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
                 setIsLoggedIn(false);
                 setUsername('');
             }
@@ -44,11 +42,12 @@ const Header = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
         setIsLoggedIn(false);
         setUsername('');
         window.location.href = '/auth?mode=signin';
     };
+
 
     return (
         <header className="bg-white shadow-sm header-sticky">
