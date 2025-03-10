@@ -70,3 +70,73 @@
         transform: translateX(0);
     }
 }
+
+/* New Slide and Fade Transitions */
+.fade-in {
+    animation: slideFadeIn 0.3s ease-in-out forwards;
+}
+
+.fade-out {
+    animation: slideFadeOut 0.3s ease-in-out forwards;
+}
+
+/* Slide and Fade In Animation */
+@keyframes slideFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px); /* Slide in from slightly left */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide and Fade Out Animation */
+@keyframes slideFadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px); /* Slide out to the right */
+    }
+}
+
+/* Adjust for elements moving to the right (Sign Up mode) */
+.flex-row-reverse .fade-in {
+    animation: slideFadeInRight 0.3s ease-in-out forwards;
+}
+
+.flex-row-reverse .fade-out {
+    animation: slideFadeOutLeft 0.3s ease-in-out forwards;
+}
+
+@keyframes slideFadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px); /* Slide in from slightly right */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideFadeOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px); /* Slide out to the left */
+    }
+}
+
+/* Ensure smooth transitions */
+.auth-container,
+.auth-image {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}

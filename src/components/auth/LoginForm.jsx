@@ -31,14 +31,13 @@ const LoginForm = () => {
                 password: formData.password,
             });
             const { token } = response.data;
-            localStorage.setItem('token', token); // Store JWT token
+            localStorage.setItem('authToken', token); // Changed from 'token' to 'authToken' to match App.js
             if (formData.rememberMe) {
-                // Optionally store token in a more persistent way (e.g., cookies)
                 localStorage.setItem('rememberMe', 'true');
             }
             setSuccess('Login successful! Redirecting...');
             setTimeout(() => {
-                window.location.href = '/profile'; // Redirect to profile page
+                window.location.href = '/'; // Redirect to home page
             }, 1500);
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -50,7 +49,7 @@ const LoginForm = () => {
             <button
                 type="button"
                 className="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 w-100 mb-4"
-                onClick={() => alert('Google login not implemented yet.')} // Placeholder, will implement in Step 4
+                onClick={() => alert('Google login not implemented yet.')}
             >
                 <i className="fa-brands fa-google me-2"></i>
                 <span>Continue with Google</span>
