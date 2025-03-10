@@ -1,150 +1,186 @@
 import { useEffect, useState } from "react";
 import { DAYS, DOCTORS, HOURS } from "./utils/constants";
-import { default as _Modal } from "react-modal";
+import Modal from 'react-modal';
+import { format, startOfWeek, addDays } from 'date-fns';
+import './Schedule.css';
 
 export default function Schedule() {
-    const [selectedWeek, setSelectedWeek] = useState("");
-    const [data, setData] = useState([]);
-    const [cellSelected, setCellSelected] = useState({});
-    const [isOpen, setOpen] = useState(false);
+    const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date()));
+    const [schedule, setSchedule] = useState([]);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const data = [
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-            [DOCTORS[1], DOCTORS[2], DOCTORS[3], DOCTORS[4], DOCTORS[5], DOCTORS[6], DOCTORS[7]],
-        ];
-        setData(data);
-    }, []);
+        // Simulate API call to fetch schedule
+        const fetchSchedule = async () => {
+            setLoading(true);
+            try {
+                // Replace with actual API call
+                const weekSchedule = HOURS.map(hour => ({
+                    hour,
+                    slots: DAYS.map(day => ({
+                        day,
+                        doctor: null,
+                        available: Math.random() > 0.3 // Randomly set availability
+                    }))
+                }));
+                setSchedule(weekSchedule);
+            } catch (error) {
+                console.error('Failed to fetch schedule:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const onClick = (rowIndex, colIndex) => {
-        setCellSelected({ rowIndex, colIndex });
-        setOpen(true);
+        fetchSchedule();
+    }, [selectedWeek]);
+
+    const handleSlotClick = (hour, dayIndex) => {
+        const slot = schedule.find(s => s.hour === hour)?.slots[dayIndex];
+        if (slot?.available && !slot.doctor) {
+            setSelectedSlot({ hour, dayIndex });
+            setIsModalOpen(true);
+        }
     };
 
-    const onModalSubmit = (itemSelected) => {
-        let clone = [...data];
-        clone[cellSelected.rowIndex][cellSelected.colIndex] = itemSelected;
-        setData(clone);
+    const handleDoctorSelect = (doctor) => {
+        setSchedule(prev => prev.map(timeSlot => {
+            if (timeSlot.hour === selectedSlot.hour) {
+                const newSlots = [...timeSlot.slots];
+                newSlots[selectedSlot.dayIndex] = {
+                    ...newSlots[selectedSlot.dayIndex],
+                    doctor
+                };
+                return { ...timeSlot, slots: newSlots };
+            }
+            return timeSlot;
+        }));
+        setIsModalOpen(false);
     };
 
-    function closeModal() {
-        setOpen(false);
+    const renderWeekDays = () => {
+        return DAYS.map((day, index) => {
+            const date = addDays(selectedWeek, index);
+            return (
+                <th key={day} className="text-center p-3 bg-primary text-white">
+                    <div className="font-bold">{day}</div>
+                    <div className="text-sm">{format(date, 'MMM d')}</div>
+                </th>
+            );
+        });
+    };
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-96">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
+        </div>;
     }
 
     return (
-        <div className="container mx-auto mt-4">
-            <input
-                type="week"
-                defaultValue={selectedWeek}
-                onClick={(e) => setSelectedWeek(e.target.value)}
-                className="border p-2 mb-4"
-            />
-            <table className="w-full border">
-                <thead className="font-bold">
-                    <tr>
-                        <td></td>
-                        {DAYS.map((item, index) => (
-                            <td className="text-center py-3" key={index}>
-                                {item}
-                            </td>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {HOURS.map((item, rowIndex) => (
-                        <tr className="border" key={rowIndex}>
-                            <td className="text-center py-5">{item}</td>
-                            {data[rowIndex] &&
-                                data[rowIndex].map((_item, colIndex) => (
+        <div className="schedule-container">
+            <div className="mb-4 d-flex justify-content-between align-items-center">
+                <h2 className="text-2xl font-bold">Vaccination Schedule</h2>
+                <div className="week-selector">
+                    <button 
+                        className="btn btn-outline-primary me-2"
+                        onClick={() => setSelectedWeek(prev => addDays(prev, -7))}
+                    >
+                        Previous Week
+                    </button>
+                    <span className="mx-3 font-semibold">
+                        {format(selectedWeek, 'MMM d')} - {format(addDays(selectedWeek, 6), 'MMM d, yyyy')}
+                    </span>
+                    <button 
+                        className="btn btn-outline-primary ms-2"
+                        onClick={() => setSelectedWeek(prev => addDays(prev, 7))}
+                    >
+                        Next Week
+                    </button>
+                </div>
+            </div>
+
+            <div className="table-responsive">
+                <table className="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th className="text-center bg-light">Time</th>
+                            {renderWeekDays()}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {schedule.map(({ hour, slots }) => (
+                            <tr key={hour}>
+                                <td className="text-center bg-light font-semibold">
+                                    {hour}
+                                </td>
+                                {slots.map((slot, dayIndex) => (
                                     <td
-                                        className="text-center border cursor-pointer hover:bg-gray"
-                                        onClick={() => onClick(rowIndex, colIndex)}
-                                        key={colIndex}
+                                        key={dayIndex}
+                                        className={`text-center cursor-pointer transition-all ${
+                                            slot.available 
+                                                ? slot.doctor 
+                                                    ? 'bg-success bg-opacity-25'
+                                                    : 'bg-white hover:bg-gray-100'
+                                                : 'bg-gray-200'
+                                        }`}
+                                        onClick={() => handleSlotClick(hour, dayIndex)}
                                     >
-                                        {_item.name}
+                                        {slot.doctor ? (
+                                            <div className="p-2">
+                                                <div className="font-semibold">{slot.doctor.name}</div>
+                                                <div className="text-sm text-muted">{slot.doctor.specialty}</div>
+                                            </div>
+                                        ) : slot.available ? (
+                                            <div className="p-2 text-primary">Available</div>
+                                        ) : (
+                                            <div className="p-2 text-muted">Unavailable</div>
+                                        )}
                                     </td>
                                 ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <Modal
-                isOpen={isOpen}
-                closeModal={closeModal}
-                onSubmit={onModalSubmit}
-            ></Modal>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <DoctorSelectionModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onDoctorSelect={handleDoctorSelect}
+                doctors={DOCTORS}
+            />
         </div>
     );
 }
 
-const Modal = ({ isOpen, closeModal, onSubmit }) => {
-    const [doctors] = useState(DOCTORS);
-    const [selected, setSelected] = useState({});
-
-    const onClick = (item) => {
-        setSelected(item);
-    };
-
-    const customStyles = {
-        content: {
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-        },
-    };
-
+function DoctorSelectionModal({ isOpen, onClose, onDoctorSelect, doctors }) {
     return (
-        <_Modal
+        <Modal
             isOpen={isOpen}
+            onRequestClose={onClose}
+            className="modal-content p-4 rounded-lg shadow-lg"
+            overlayClassName="modal-overlay"
             ariaHideApp={false}
-            onRequestClose={() => {
-                closeModal();
-            }}
-            onAfterOpen={() => setSelected({})}
-            contentLabel="doctor list"
-            style={customStyles}
         >
-            <div className="flex justify-end mb-3">
-                <button
-                    className="bg-primary px-2 py-1 rounded-lg text-white"
-                    onClick={closeModal}
-                >
-                    close
-                </button>
+            <div className="modal-header d-flex justify-content-between align-items-center mb-4">
+                <h3 className="modal-title">Select Doctor</h3>
+                <button className="btn btn-close" onClick={onClose}></button>
             </div>
-            <h1 className="text-center text-xl font-bold mb-4">Danh sách bác sĩ</h1>
-            <div className="flex flex-wrap gap-y-2">
-                {doctors.map((item) => (
-                    <button
-                        key={item.id}
-                        className={`w-1/4 bg-transparent border py-2 border-primary ${
-                            selected.id === item.id && "!bg-primary text-white"
-                        }`}
-                        onClick={() => onClick(item)}
+            <div className="doctor-grid">
+                {doctors.map(doctor => (
+                    <div
+                        key={doctor.id}
+                        className="doctor-card p-3 border rounded cursor-pointer hover:bg-gray-50"
+                        onClick={() => onDoctorSelect(doctor)}
                     >
-                        {item.name}
-                    </button>
+                        <h4 className="font-semibold">{doctor.name}</h4>
+                        <p className="text-sm text-muted">{doctor.specialty}</p>
+                    </div>
                 ))}
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    onSubmit(selected);
-                    closeModal();
-                }}
-            >
-                <button className="mt-3 bg-primary rounded-lg px-5 py-2 text-white font-bold">
-                    Lưu
-                </button>
-            </form>
-        </_Modal>
+        </Modal>
     );
-};
+}

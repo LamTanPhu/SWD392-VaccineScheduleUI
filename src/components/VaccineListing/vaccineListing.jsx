@@ -96,33 +96,37 @@ const VaccineListing = () => {
                     </div>
                     ))
                 : filteredItems.map((item) => (
-                    <div key={item.id} className="col-md-4 mb-4">
-                        <div className="card vaccine-card">
-                        <div className="card-body">
-                            <h5 className="card-title">{item.name}</h5>
-                            {item.type === "vaccine" ? (
-                            <>
-                                <p className="card-text">Prevents: {item.prevents}</p>
-                                <p className="card-text">Origin: {item.origin}</p>
-                            </>
-                            ) : (
-                            <>
-                                <p className="card-text">Includes: {item.includes}</p>
-                                <p className="card-text">Target: {item.target}</p>
-                            </>
-                            )}
-                            <p className="card-text">
-                            <span role="img" aria-label="price">💲</span> {item.price} USD
-                            </p>
-                            <button
-                            className={`btn ${selectedItems.find((i) => i.id === item.id) ? "btn-success" : "btn-primary"}`}
-                            onClick={() => handleSelectToggle(item)}
-                            >
-                            {selectedItems.find((i) => i.id === item.id) ? "SELECTED" : "SELECT"}
-                            </button>
+                        <div key={item.id} className="col-md-4 mb-4">
+                            <div className="card vaccine-card">
+                                <div className="card-body">
+                                    <div className="card-content">
+                                        <h5 className="card-title">{item.name}</h5>
+                                        {item.type === "vaccine" ? (
+                                            <>
+                                                <p className="card-text">Prevents: {item.prevents}</p>
+                                                <p className="card-text">Origin: {item.origin}</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="card-text">Includes: {item.includes}</p>
+                                                <p className="card-text">Target: {item.target}</p>
+                                            </>
+                                        )}
+                                        <p className="card-text">
+                                            <span role="img" aria-label="price">💲</span> {item.price} USD
+                                        </p>
+                                    </div>
+                                    <div className="card-footer">
+                                        <button
+                                            className={`btn ${selectedItems.find((i) => i.id === item.id) ? "btn-success" : "btn-primary"}`}
+                                            onClick={() => handleSelectToggle(item)}
+                                        >
+                                            {selectedItems.find((i) => i.id === item.id) ? "SELECTED" : "SELECT"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        </div>
-                    </div>
                     ))}
             </div>
             </div>
