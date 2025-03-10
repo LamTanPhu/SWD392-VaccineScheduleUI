@@ -1,12 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/layout/Layout";
-import AdminStaffLayout from "./components/layout/AdminStaffLayout";
-import HomePage from "./components/homePage/HomePage";
-import AuthPage from "./components/auth/AuthPage";
-import About from "./components/About/about.jsx"; // Import the About component
+import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import About from "./components/About/about.jsx"; // Import the About component
+import AuthPage from "./components/auth/AuthPage";
+import HomePage from "./components/homePage/HomePage";
+import AdminStaffLayout from "./components/layout/AdminStaffLayout";
+import Layout from "./components/layout/Layout";
+import Schedule from "./components/Schedule/schedule";
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
@@ -32,7 +33,7 @@ function App() {
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/about" element={<About />} /> {/* Add About page route */}
                     {/* Add other public routes here */}
-
+                    <Route path="/schedule" element={<Schedule />} /> {/* Add Schedule page route here, temporarily*/}
                     {/* Admin/Staff Routes */}
                     <Route
                         path="/admin/*"
