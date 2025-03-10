@@ -28,9 +28,17 @@ const AdminStaffLayout = ({ children }) => {
         navigate('/auth');
     };
 
-    // Placeholder for notification click (can be expanded later)
     const handleNotificationClick = () => {
         alert('No new notifications');
+    };
+
+    // Generate breadcrumb based on current path
+    const getBreadcrumb = () => {
+        const pathParts = location.pathname.split('/').filter((part) => part);
+        return pathParts.map((part, index) => ({
+            name: part.charAt(0).toUpperCase() + part.slice(1),
+            path: `/${pathParts.slice(0, index + 1).join('/')}`,
+        }));
     };
 
     return (
@@ -118,8 +126,9 @@ const AdminStaffLayout = ({ children }) => {
                 </div>
             </div>
 
-            {/* Main Content with Updated Header */}
+            {/* Main Content with Updated Header and Subheader */}
             <div className="flex-grow-1 content-area">
+                {/* Main Header */}
                 <header className="admin-header">
                     <div className="container py-2">
                         <div className="d-flex align-items-center justify-content-end gap-3">
@@ -128,7 +137,7 @@ const AdminStaffLayout = ({ children }) => {
                                 className="btn btn-outline-primary position-relative rounded-circle"
                                 onClick={handleNotificationClick}
                             >
-                                <i className="bi bi-bell"></i>
+                                <i className="fas fa-bell"></i>
                                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                     3
                                     <span className="visually-hidden">unread notifications</span>
@@ -158,8 +167,36 @@ const AdminStaffLayout = ({ children }) => {
                     </div>
                 </header>
 
+                {/* Subheader with Breadcrumb */}
+                <div className="admin-subheader">
+                    <div className="container py-2">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb mb-0">
+                                {getBreadcrumb().map((crumb, index) => (
+                                    <li
+                                        key={crumb.path}
+                                        className={`breadcrumb-item ${
+                                            index === getBreadcrumb().length - 1 ? 'active' : ''
+                                        }`}
+                                    >
+                                        {index === getBreadcrumb().length - 1 ? (
+                                            crumb.name
+                                        ) : (
+                                            <Link to={crumb.path} className="text-muted">
+                                                {crumb.name}
+                                            </Link>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                {/* Main Content */}
                 <main className="p-4 content-fade">{children}</main>
 
+                {/* Footer */}
                 <footer className="bg-light text-center py-2">
                     <small>© {new Date().getFullYear()} VaccineVN. All rights reserved.</small>
                 </footer>
