@@ -10,3 +10,15 @@
   --color-secondary: #19C2F5;
   --color-gray: #D9D9D9;
 }
+
+/* Chrome, Safari, Edge, Opera */
+input.quantity::-webkit-outer-spin-button,
+input.quantity::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number].quantity {
+  -moz-appearance: textfield;
+}
