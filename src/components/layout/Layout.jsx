@@ -59,20 +59,20 @@ const Header = () => {
                             <span className="fs-3 fw-bold text-primary">VaccineVN</span>
                         </Link>
                     </div>
-                    <nav className="col-md-6 d-flex justify-content-center gap-4">
+                    <nav className="col-md-6 d-flex justify-content-center gap-5"> {/* Increased gap for better spacing */}
                         <Link to="/" className="nav-link fw-medium text-dark nav-hover">Home</Link>
                         <Link to="/about" className="nav-link fw-medium text-dark nav-hover">About</Link>
                         <Link to="/vaccines" className="nav-link fw-medium text-dark nav-hover">Vaccines</Link>
-                        <Link to="/packages" className="nav-link fw-medium text-dark nav-hover">Packages</Link>
+                        {/* Removed Packages link */}
                         <Link to="/pricing" className="nav-link fw-medium text-dark nav-hover">Pricing</Link>
                     </nav>
                     <div className="col-md-3 d-flex justify-content-end gap-3">
-                        <Link to="/search" className="btn btn-outline-primary btn-grow">
+                        <Link to="/search" className="btn btn-outline-primary btn-grow rounded-pill"> {/* Added rounded-pill for a subtle design tweak */}
                             <i className="bi bi-search me-1"></i> Search
                         </Link>
                         <div className="dropdown">
                             <button
-                                className="btn btn-primary btn-grow dropdown-toggle"
+                                className="btn btn-primary btn-grow dropdown-toggle rounded-pill" // Added rounded-pill for a subtle design tweak
                                 type="button"
                                 id="authDropdown"
                                 data-bs-toggle="dropdown"

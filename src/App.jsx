@@ -8,7 +8,7 @@ import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
 import Schedule from "./components/Schedule/schedule";
-
+import VaccineListing from "./components/VaccineListing/VaccineListing";
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
 const AdminVaccines = () => <h1>Vaccines Management</h1>;
@@ -34,6 +34,8 @@ function App() {
                     <Route path="/about" element={<About />} /> {/* Add About page route */}
                     {/* Add other public routes here */}
                     <Route path="/schedule" element={<Schedule />} /> {/* Add Schedule page route here, temporarily*/}
+                    <Route path="/vaccines" element={<VaccineListing />} />
+
                     {/* Admin/Staff Routes */}
                     <Route
                         path="/admin/*"
