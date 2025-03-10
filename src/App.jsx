@@ -3,6 +3,7 @@ import Layout from "./components/layout/Layout";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import HomePage from "./components/homePage/HomePage";
 import AuthPage from "./components/auth/AuthPage";
+import Schedule from "./pages/schedule";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
@@ -46,6 +47,7 @@ function App() {
                         <Route path="schedules" element={<AdminSchedules />} />
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="settings" element={<AdminSettings />} />
+                        <Route path="/schedule" element={<Schedule />} />
                         {/* Add new admin routes here */}
                     </Route>
                 </Routes>
