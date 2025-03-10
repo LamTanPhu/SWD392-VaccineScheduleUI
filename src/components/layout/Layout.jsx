@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode'; // Use named import
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './layout.css';
+
 const locations = {
     north: ["Bắc Giang", "Hà Nội", "Hải Phòng", "Yên Bái", "Hải Dương", "Phú Thọ"],
     central: ["Thanh Hóa", "Nghệ An", "Hà Tĩnh", "Quảng Bình", "Huế", "Đà Nẵng"],
@@ -8,18 +10,45 @@ const locations = {
 };
 
 const Header = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+
     useEffect(() => {
-        const header = document.querySelector('.header-sticky');
-        const handleScroll = () => {
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                console.log('Decoded Token:', decoded); // Debug: Confirm token structure
+                const currentTime = Date.now() / 1000; // Current time in seconds
+                if (decoded.exp < currentTime) {
+                    // Token expired
+                    localStorage.removeItem('token');
+                    setIsLoggedIn(false);
+                    setUsername('');
+                } else {
+                    setIsLoggedIn(true);
+                    // Use the correct claim name from the token
+                    const usernameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+                    setUsername(decoded[usernameClaim] || 'User');
+                }
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                localStorage.removeItem('token');
+                setIsLoggedIn(false);
+                setUsername('');
             }
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        } else {
+            setIsLoggedIn(false);
+            setUsername('');
+        }
     }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setUsername('');
+        window.location.href = '/auth?mode=signin';
+    };
 
     return (
         <header className="bg-white shadow-sm header-sticky">
@@ -49,15 +78,29 @@ const Header = () => {
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                Account
+                                {isLoggedIn ? `Welcome, ${username}` : 'Account'}
                             </button>
                             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
-                                <li>
-                                    <Link to="/auth?mode=signin" className="dropdown-item">Sign In</Link>
-                                </li>
-                                <li>
-                                    <Link to="/auth?mode=signup" className="dropdown-item">Sign Up</Link>
-                                </li>
+                                {isLoggedIn ? (
+                                    <li>
+                                        <button className="dropdown-item" onClick={handleLogout}>
+                                            Sign Out
+                                        </button>
+                                    </li>
+                                ) : (
+                                    <>
+                                        <li>
+                                            <Link to="/auth?mode=signin" className="dropdown-item">
+                                                Sign In
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link to="/auth?mode=signup" className="dropdown-item">
+                                                Sign Up
+                                            </Link>
+                                        </li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                     </div>

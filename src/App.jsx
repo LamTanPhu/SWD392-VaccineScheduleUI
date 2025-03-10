@@ -3,6 +3,7 @@ import Layout from "./components/layout/Layout";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import HomePage from "./components/homePage/HomePage";
 import AuthPage from "./components/auth/AuthPage";
+import About from "./components/About/about.jsx"; // Import the About component
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
@@ -29,6 +30,7 @@ function App() {
                     {/* Public Routes */}
                     <Route path="/" element={<HomePage />} />
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/about" element={<About />} /> {/* Add About page route */}
                     {/* Add other public routes here */}
 
                     {/* Admin/Staff Routes */}
@@ -55,4 +57,3 @@ function App() {
 }
 
 export default App;
-

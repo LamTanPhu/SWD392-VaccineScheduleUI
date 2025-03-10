@@ -1,0 +1,22 @@
+/* Styling for the commitment cards */
+.commitment-card {
+    background-color: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+/* Hover effect */
+.commitment-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Optional: Add a subtle active effect when clicked */
+.commitment-card:active {
+    transform: translateY(-5px);
+}
+
+/* Ensure the navigation-box has proper positioning */
+.navigation-box {
+    display: block;
+}
