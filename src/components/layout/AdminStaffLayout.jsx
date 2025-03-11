@@ -1,26 +1,40 @@
 import { jwtDecode } from 'jwt-decode';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './adminStaffLayout.css';
 
 const AdminStaffLayout = ({ children }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [username, setUsername] = useState('Admin');
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const navigate = useNavigate();
     const location = useLocation();
-    const [username, setUsername] = useState('Admin');
 
-    React.useEffect(() => {
+    useEffect(() => {
         const token = localStorage.getItem('authToken');
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                const usernameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
-                setUsername(decoded[usernameClaim] || 'Admin');
-            } catch (error) {
-                console.error('Error decoding token:', error);
-            }
+        if (!token) {
+            navigate('/auth');
+            return;
         }
-    }, []);
+        try {
+            const decoded = jwtDecode(token);
+            const usernameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+            setUsername(decoded[usernameClaim] || 'Admin');
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            navigate('/auth');
+        }
+    }, [navigate]);
+
+    const handleThemeToggle = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    };
+
+    const handleSidebarToggle = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
@@ -32,7 +46,6 @@ const AdminStaffLayout = ({ children }) => {
         alert('No new notifications');
     };
 
-    // Generate breadcrumb based on current path
     const getBreadcrumb = () => {
         const pathParts = location.pathname.split('/').filter((part) => part);
         return pathParts.map((part, index) => ({
@@ -42,21 +55,22 @@ const AdminStaffLayout = ({ children }) => {
     };
 
     return (
-        <div className="d-flex min-vh-100 admin-layout">
+        <div className="d-flex min-vh-100 admin-layout" data-theme={theme}>
             {/* Sidebar */}
             <div className={`sidebar text-white ${isSidebarCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-header p-3 d-flex justify-content-between align-items-center">
                     <Link to="/admin" className="text-white text-decoration-none">
                         <span className="fs-4 fw-bold sidebar-logo">
-                            <i className="bi bi-syringe me-2"></i>
+                            <i className="fas fa-syringe me-2"></i>
                             VaccineVN Admin
                         </span>
                     </Link>
                     <button
                         className="btn btn-link text-white p-0"
-                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        onClick={handleSidebarToggle}
+                        aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                     >
-                        <i className={`bi ${isSidebarCollapsed ? 'bi-arrow-right' : 'bi-arrow-left'}`}></i>
+                        <i className={`fas ${isSidebarCollapsed ? 'fa-arrow-right' : 'fa-arrow-left'}`}></i>
                     </button>
                 </div>
                 <nav className="sidebar-nav p-3">
@@ -68,7 +82,7 @@ const AdminStaffLayout = ({ children }) => {
                                     location.pathname === '/admin/dashboard' ? 'active' : ''
                                 }`}
                             >
-                                <i className="bi bi-house-door me-2"></i>
+                                <i className="fas fa-home me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Dashboard'}</span>
                             </Link>
                         </li>
@@ -79,7 +93,7 @@ const AdminStaffLayout = ({ children }) => {
                                     location.pathname === '/admin/vaccines' ? 'active' : ''
                                 }`}
                             >
-                                <i className="bi bi-syringe me-2"></i>
+                                <i className="fas fa-syringe me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Vaccines'}</span>
                             </Link>
                         </li>
@@ -90,7 +104,7 @@ const AdminStaffLayout = ({ children }) => {
                                     location.pathname === '/admin/schedules' ? 'active' : ''
                                 }`}
                             >
-                                <i className="bi bi-calendar me-2"></i>
+                                <i className="fas fa-calendar me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Schedules'}</span>
                             </Link>
                         </li>
@@ -101,7 +115,7 @@ const AdminStaffLayout = ({ children }) => {
                                     location.pathname === '/admin/users' ? 'active' : ''
                                 }`}
                             >
-                                <i className="bi bi-people me-2"></i>
+                                <i className="fas fa-users me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Users'}</span>
                             </Link>
                         </li>
@@ -112,7 +126,7 @@ const AdminStaffLayout = ({ children }) => {
                                     location.pathname === '/admin/settings' ? 'active' : ''
                                 }`}
                             >
-                                <i className="bi bi-gear me-2"></i>
+                                <i className="fas fa-cog me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Settings'}</span>
                             </Link>
                         </li>
@@ -120,54 +134,69 @@ const AdminStaffLayout = ({ children }) => {
                 </nav>
                 <div className="sidebar-footer p-3">
                     <button className="btn btn-outline-light w-100" onClick={handleLogout}>
-                        <i className="bi bi-box-arrow-right me-2"></i>
+                        <i className="fas fa-sign-out-alt me-2"></i>
                         <span>{!isSidebarCollapsed && 'Logout'}</span>
                     </button>
                 </div>
             </div>
 
-            {/* Main Content with Updated Header and Subheader */}
+            {/* Main Content */}
             <div className="flex-grow-1 content-area">
-                {/* Main Header */}
                 <header className="admin-header">
                     <div className="container py-2">
-                        <div className="d-flex align-items-center justify-content-end gap-3">
-                            {/* Notification Bell */}
+                        <div className="d-flex align-items-center justify-content-between w-100">
+                            {/* Sidebar Toggle Button on the Left */}
                             <button
-                                className="btn btn-outline-primary position-relative rounded-circle"
-                                onClick={handleNotificationClick}
+                                className="btn btn-outline-primary sidebar-toggle"
+                                onClick={handleSidebarToggle}
+                                aria-label={isSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
                             >
-                                <i className="fas fa-bell"></i>
-                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    3
-                                    <span className="visually-hidden">unread notifications</span>
-                                </span>
+                                <i className={`fas ${isSidebarCollapsed ? 'fa-arrow-right' : 'fa-bars'}`}></i>
                             </button>
-                            {/* User Dropdown */}
-                            <div className="dropdown">
+                            {/* Right-side Buttons (Moved to the Right) */}
+                            <div className="d-flex align-items-center justify-content-end gap-3">
                                 <button
-                                    className="btn btn-outline-primary dropdown-toggle rounded-pill d-flex align-items-center"
-                                    type="button"
-                                    id="adminAuthDropdown"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
+                                    className="btn btn-outline-primary position-relative rounded-circle"
+                                    onClick={handleNotificationClick}
                                 >
-                                    <i className="bi bi-heart-pulse me-2"></i>
-                                    <span className="fw-bold">{username}</span>
+                                    <i className="fas fa-bell"></i>
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        0
+                                        <span className="visually-hidden">unread notifications</span>
+                                    </span>
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="adminAuthDropdown">
-                                    <li>
-                                        <button className="dropdown-item" onClick={handleLogout}>
-                                            Sign Out
-                                        </button>
-                                    </li>
-                                </ul>
+                                <button
+                                    className="btn btn-outline-primary rounded-circle"
+                                    onClick={handleThemeToggle}
+                                    aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                                >
+                                    <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
+                                </button>
+                                <div className="dropdown">
+                                    <button
+                                        className="btn btn-outline-primary dropdown-toggle rounded-pill d-flex align-items-center"
+                                        type="button"
+                                        id="adminAuthDropdown"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        <i className="fas fa-heartbeat me-2"></i>
+                                        <span className="fw-bold">{username}</span>
+                                    </button>
+                                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="adminAuthDropdown">
+                                        <li>
+                                            <button className="dropdown-item" onClick={handleLogout}>
+                                                Sign Out
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                {/* Subheader with Breadcrumb */}
+                {/* Subheader with Breadcrumb (Moved Closer to Sidebar) */}
                 <div className="admin-subheader">
                     <div className="container py-2">
                         <nav aria-label="breadcrumb">
@@ -193,10 +222,7 @@ const AdminStaffLayout = ({ children }) => {
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <main className="p-4 content-fade">{children}</main>
-
-                {/* Footer */}
                 <footer className="bg-light text-center py-2">
                     <small>© {new Date().getFullYear()} VaccineVN. All rights reserved.</small>
                 </footer>
