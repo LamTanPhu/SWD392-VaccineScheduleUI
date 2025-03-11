@@ -4,6 +4,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import About from "./components/About/about.jsx"; // Import the About component
 import AuthPage from "./components/auth/AuthPage";
+import Cart from "./components/cart/cart";
+import Checkout from "./components/checkout/checkout.jsx";
 import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
@@ -49,7 +51,8 @@ function App() {
                 <Route path="/about" element={<Layout><About /></Layout>} />
                 <Route path="/schedule" element={getLayout(<Schedule />)} />
                 <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
-
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"

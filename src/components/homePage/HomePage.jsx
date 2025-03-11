@@ -1,23 +1,23 @@
+import { Link } from 'react-router-dom';
 import Banner from "/assets/images/banner.png";
-import Service1 from "/assets/images/s1.png";
-import Service2 from "/assets/images/s2.png";
-import Service3 from "/assets/images/s3.png";
-import Service4 from "/assets/images/s4.png";
-import Product1 from "/assets/images/p1_1.png";
 import Product2 from "/assets/images/p1.png";
+import Product1 from "/assets/images/p1_1.png";
 import Product3 from "/assets/images/p3.png";
 import Product4 from "/assets/images/p4.png";
 import Product5 from "/assets/images/p5.png";
 import Product6 from "/assets/images/p6.png";
-import { Link } from 'react-router-dom';
+import Service1 from "/assets/images/s1.png";
+import Service2 from "/assets/images/s2.png";
+import Service3 from "/assets/images/s3.png";
+import Service4 from "/assets/images/s4.png";
 
 const vaccines = [
-    { image: Product1, name: "Vắc xin Sốt Xuất Huyết", description: "Bảo vệ khỏi sốt xuất huyết" },
-    { image: Product2, name: "Vắc xin Phế Cầu 23", description: "Ngăn ngừa viêm phổi" },
-    { image: Product3, name: "Vắc xin Phế Cầu 13", description: "Phòng bệnh phế cầu khuẩn" },
-    { image: Product4, name: "Vắc xin Zona Thần Kinh", description: "Ngăn ngừa bệnh zona" },
-    { image: Product5, name: "Vắc xin Não Mô Cầu A", description: "Phòng viêm màng não" },
-    { image: Product6, name: "Vắc xin Não Mô Cầu B", description: "Bảo vệ khỏi viêm màng não" },
+    { id: 1, image: Product1, name: "Vắc xin Sốt Xuất Huyết", description: "Bảo vệ khỏi sốt xuất huyết" },
+    { id: 2, image: Product2, name: "Vắc xin Phế Cầu 23", description: "Ngăn ngừa viêm phổi" },
+    { id: 3, image: Product3, name: "Vắc xin Phế Cầu 13", description: "Phòng bệnh phế cầu khuẩn" },
+    { id: 4, image: Product4, name: "Vắc xin Zona Thần Kinh", description: "Ngăn ngừa bệnh zona" },
+    { id: 5, image: Product5, name: "Vắc xin Não Mô Cầu A", description: "Phòng viêm màng não" },
+    { id: 6, image: Product6, name: "Vắc xin Não Mô Cầu B", description: "Bảo vệ khỏi viêm màng não" },
 ];
 
 const services = [
@@ -28,10 +28,25 @@ const services = [
 ];
 
 function VaccineList({ vaccines }) {
+    // Add to Cart function, adapted from your allies' Product component
+    const addToCart = (item) => {
+        const cart = JSON.parse(localStorage.getItem("cart")) ?? [];
+
+        let itemIndex = cart.findIndex((x) => x.id === item.id);
+        if (itemIndex === -1) {
+            cart.push({ ...item, quantity: 1 });
+        } else {
+            cart[itemIndex].quantity += 1;
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+        alert(`${item.name} đã được thêm vào giỏ hàng!`); // Optional: Feedback to user
+    };
+
     return (
         <div className="row row-cols-1 row-cols-md-3 g-4">
-            {vaccines.map((vaccine, index) => (
-                <div key={index} className="col">
+            {vaccines.map((vaccine) => (
+                <div key={vaccine.id} className="col">
                     <div className="card h-100 shadow-sm">
                         <img className="card-img-top p-3" src={vaccine.image} alt={vaccine.name} />
                         <div className="card-body">
@@ -39,7 +54,12 @@ function VaccineList({ vaccines }) {
                             <p className="card-text text-muted">{vaccine.description}</p>
                         </div>
                         <div className="card-footer bg-white border-0">
-                            <Link to="/schedule" className="btn btn-primary w-100">Đặt lịch ngay</Link>
+                            <button
+                                className="bg-transparent border border-primary px-5 py-1 rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer w-100"
+                                onClick={() => addToCart(vaccine)}
+                            >
+                                Thêm nhanh
+                            </button>
                         </div>
                     </div>
                 </div>

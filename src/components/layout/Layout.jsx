@@ -14,14 +14,14 @@ const Header = () => {
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');  // Changed from 'token' to 'authToken'
+        const token = localStorage.getItem('authToken');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
                 console.log('Decoded Token:', decoded);
                 const currentTime = Date.now() / 1000;
                 if (decoded.exp < currentTime) {
-                    localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
+                    localStorage.removeItem('authToken');
                     setIsLoggedIn(false);
                     setUsername('');
                 } else {
@@ -31,7 +31,7 @@ const Header = () => {
                 }
             } catch (error) {
                 console.error('Error decoding token:', error);
-                localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
+                localStorage.removeItem('authToken');
                 setIsLoggedIn(false);
                 setUsername('');
             }
@@ -42,12 +42,11 @@ const Header = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('authToken');  // Changed from 'token' to 'authToken'
+        localStorage.removeItem('authToken');
         setIsLoggedIn(false);
         setUsername('');
         window.location.href = '/auth?mode=signin';
     };
-
 
     return (
         <header className="bg-white shadow-sm header-sticky">
@@ -58,20 +57,23 @@ const Header = () => {
                             <span className="fs-3 fw-bold text-primary">VaccineVN</span>
                         </Link>
                     </div>
-                    <nav className="col-md-6 d-flex justify-content-center gap-5"> {/* Increased gap for better spacing */}
+                    <nav className="col-md-6 d-flex justify-content-center gap-5">
                         <Link to="/" className="nav-link fw-medium text-dark nav-hover">Home</Link>
                         <Link to="/about" className="nav-link fw-medium text-dark nav-hover">About</Link>
                         <Link to="/vaccines" className="nav-link fw-medium text-dark nav-hover">Vaccines</Link>
-                        {/* Removed Packages link */}
                         <Link to="/pricing" className="nav-link fw-medium text-dark nav-hover">Pricing</Link>
                     </nav>
                     <div className="col-md-3 d-flex justify-content-end gap-3">
-                        <Link to="/search" className="btn btn-outline-primary btn-grow rounded-pill"> {/* Added rounded-pill for a subtle design tweak */}
+                        <Link to="/search" className="btn btn-outline-primary btn-grow rounded-pill">
                             <i className="bi bi-search me-1"></i> Search
+                        </Link>
+                        {/* Added Cart Link */}
+                        <Link to="/cart" className="btn btn-outline-primary btn-grow rounded-pill">
+                            <i className="bi bi-cart me-1"></i> Cart
                         </Link>
                         <div className="dropdown">
                             <button
-                                className="btn btn-primary btn-grow dropdown-toggle rounded-pill" // Added rounded-pill for a subtle design tweak
+                                className="btn btn-primary btn-grow dropdown-toggle rounded-pill"
                                 type="button"
                                 id="authDropdown"
                                 data-bs-toggle="dropdown"
