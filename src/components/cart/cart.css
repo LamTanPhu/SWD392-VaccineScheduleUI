@@ -1,0 +1,60 @@
+/* cart.css */
+
+/* Primary color for theme consistency */
+.bg-primary {
+    background-color: #28a745 ;
+}
+
+.text-primary {
+    color: #28a745 ;
+}
+
+/* Product image styling */
+.cart-product-image {
+    max-width: 150px;
+}
+
+/* Quantity input styling */
+.cart-quantity-input {
+    max-width: 100px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Remove button styling */
+.cart-remove-btn {
+    color: #dc3545; /* Red color for trash icon */
+}
+
+.cart-remove-btn:hover {
+    color: #c82333; /* Darker red on hover */
+    text-decoration: none;
+}
+
+/* Summary card styling */
+.cart-summary {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+/* Total text styling */
+.cart-total {
+    font-size: 1.25rem;
+}
+
+/* Checkout button styling */
+.cart-checkout-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.cart-checkout-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Ensure images fit well */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
