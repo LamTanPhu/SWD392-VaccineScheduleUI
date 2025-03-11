@@ -28,6 +28,7 @@ const PrivateRoute = ({ children }) => {
     console.log('Is Authorized:', isAuthorized);
     return isAuthorized ? children : <Navigate to="/auth" />;
 };
+
 // Determine layout based on user role
 const getLayout = (children) => {
     const token = localStorage.getItem('authToken');
@@ -51,8 +52,8 @@ function App() {
                 <Route path="/about" element={<Layout><About /></Layout>} />
                 <Route path="/schedule" element={getLayout(<Schedule />)} />
                 <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/cart" element={<Layout><Cart /></Layout>} /> {/* Added Layout */}
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} /> {/* Added Layout */}
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"

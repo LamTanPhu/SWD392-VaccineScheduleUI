@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { formatCurrency } from "../utils/utils";
+import './checkout.css'; // Import the separate checkout CSS
 
 export default function Checkout() {
   const cart = useMemo(() => {
@@ -7,103 +8,103 @@ export default function Checkout() {
   }, []);
 
   return (
-    <div className="container mx-auto mt-5">
-      <h1 className="text-4xl font-bold text-primary border-b border-primary w-fit pb-1 mb-5">
+    <div className="container mt-5">
+      <h1 className="h1 fw-bold text-primary border-bottom border-primary pb-1 mb-5">
         Thanh toán
       </h1>
-      <div className="flex items-stretch justify-between">
-        <div className="w-1/2 px-2">
+      <div className="d-flex justify-content-between">
+        <div className="col-6 px-2">
           <form>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-sm">Họ và tên</label>
+            <div className="mb-4">
+              <label className="form-label checkout-label">Họ và tên</label>
               <input
                 type="text"
-                className="border border-gray px-5 py-2 rounded-lg"
+                className="form-control checkout-input"
                 placeholder="Nhập tên người nhận..."
-              ></input>
+              />
             </div>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-sm">Email</label>
+            <div className="mb-4">
+              <label className="form-label checkout-label">Email</label>
               <input
                 type="email"
-                className="border border-gray px-5 py-2 rounded-lg"
+                className="form-control checkout-input"
                 placeholder="Nhập địa chỉ email..."
-              ></input>
+              />
             </div>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-sm">Địa chỉ</label>
+            <div className="mb-4">
+              <label className="form-label checkout-label">Địa chỉ</label>
               <input
                 type="text"
-                className="border border-gray px-5 py-2 rounded-lg"
+                className="form-control checkout-input"
                 placeholder="Nhập địa chỉ giao hàng..."
-              ></input>
+              />
             </div>
-            <div className="flex w-full gap-5">
-              <div className="flex flex-col gap-2 mb-4 w-full">
-                <label className="text-sm">Thành phố</label>
+            <div className="d-flex gap-3 mb-4">
+              <div className="flex-fill">
+                <label className="form-label checkout-label">Thành phố</label>
                 <input
                   type="text"
-                  className="border border-gray px-5 py-2 rounded-lg"
+                  className="form-control checkout-input"
                   placeholder="Nhập thành phố..."
-                ></input>
+                />
               </div>
-              <div className="flex flex-col gap-2 mb-4 w-full">
-                <label className="text-sm">Mã bưu chính (không bắt buộc)</label>
+              <div className="flex-fill">
+                <label className="form-label checkout-label">Mã bưu chính (không bắt buộc)</label>
                 <input
                   type="text"
-                  className="border border-gray px-5 py-2 rounded-lg"
+                  className="form-control checkout-input"
                   placeholder="Nhập mã bưu chính..."
-                ></input>
+                />
               </div>
             </div>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-sm">Số điện thoại</label>
+            <div className="mb-4">
+              <label className="form-label checkout-label">Số điện thoại</label>
               <input
                 type="text"
-                className="border border-gray px-5 py-2 rounded-lg"
+                className="form-control checkout-input"
                 placeholder="Nhập số điện thoại..."
-              ></input>
+              />
             </div>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-sm">Hình thức thanh toán</label>
+            <div className="mb-4">
+              <label className="form-label checkout-label">Hình thức thanh toán</label>
               <div>
-                <div className="flex items-center gap-3">
-                  <input type="radio" id="vnpay" name="payment" />
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <input type="radio" id="vnpay" name="payment" className="form-check-input" />
                   <img
-                    className="w-[20px] object-contain"
+                    className="checkout-payment-icon"
                     src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png"
+                    alt="VN Pay"
                   />
-                  <label htmlFor="vnpay">VN Pay</label>
+                  <label htmlFor="vnpay" className="form-check-label">VN Pay</label>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input type="radio" id="cash" name="payment" />
+                <div className="d-flex align-items-center gap-2">
+                  <input type="radio" id="cash" name="payment" className="form-check-input" />
                   <img
-                    className="w-[20px] object-contain"
+                    className="checkout-payment-icon"
                     src="https://cdn-icons-png.flaticon.com/512/2460/2460470.png"
+                    alt="Cash"
                   />
-                  <label htmlFor="cash">Tiền mặt</label>
+                  <label htmlFor="cash" className="form-check-label">Tiền mặt</label>
                 </div>
               </div>
             </div>
-            <button className="bg-primary w-full text-white py-2 rounded-lg font-bold cursor-pointer mt-3">
+            <button className="btn btn-primary w-100 checkout-submit-btn fw-bold mt-3">
               Thanh toán ngay
             </button>
           </form>
         </div>
-        <div className="w-1/2 pl-5 h-full">
-            <h5 className="font-bold text-xl mb-5 border-b">
-                Chi tiết đơn hàng
-            </h5>
+        <div className="col-6 ps-5">
+          <h5 className="fw-bold mb-5 border-bottom pb-1">Chi tiết đơn hàng</h5>
           {cart.map((item) => (
-            <div key={item.id} className="flex items-start gap-3">
-              <div className="relative w-[100px] h-[100px]">
-                <img src={item.image_url} alt="product image" />
-                <p className="absolute top-0 h-[20px] w-[20px] flex items-center justify-center right-0 border rounded-full bg-gray font-bold">
+            <div key={item.id} className="d-flex align-items-start gap-3 mb-3">
+              <div className="position-relative checkout-product-image">
+                <img src={item.image_url} alt="product image" className="img-fluid h-100" />
+                <span className="position-absolute top-0 end-0 checkout-quantity-badge bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center">
                   {item.quantity}
-                </p>
+                </span>
               </div>
               <div>
-                <p className="font-bold">{item.name}</p>
+                <p className="fw-bold">{item.name}</p>
                 <p>{formatCurrency(item.price * item.quantity)}</p>
               </div>
             </div>

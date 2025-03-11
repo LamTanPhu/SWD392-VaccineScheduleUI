@@ -28,7 +28,6 @@ const services = [
 ];
 
 function VaccineList({ vaccines }) {
-    // Add to Cart function, adapted from your allies' Product component
     const addToCart = (item) => {
         const cart = JSON.parse(localStorage.getItem("cart")) ?? [];
 
@@ -119,7 +118,7 @@ export default function HomePage() {
                 <div className="container text-center">
                     <h3 className="fw-bold mb-3">SẴN SÀNG BẢO VỆ SỨC KHỎE?</h3>
                     <p className="mb-4">Đặt lịch tiêm vắc xin ngay hôm nay để đảm bảo sức khỏe cho bạn và gia đình</p>
-                    <Link to="/schedule" className="btn btn-light btn-lg">Bắt đầu ngay</Link>
+                    <Link to="/vaccines" className="btn btn-light btn-lg">Bắt đầu ngay</Link>
                 </div>
             </div>
         </>
