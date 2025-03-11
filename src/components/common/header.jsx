@@ -14,14 +14,15 @@ export default function Header() {
             </nav>
             <div className="flex items-center justify-end gap-3">
                 <a>
-                    <IconSearch/>
+                    <IconSearch />
                 </a>
                 <a href="/cart">
-                    <IconCart/>
+                    <IconCart />
                 </a>
                 <a href="/login" className="bg-primary text-white px-3 py-1">
                     Sign In
                 </a>
+                
             </div>
           </div>
     </header>

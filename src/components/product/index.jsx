@@ -1,4 +1,4 @@
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency } from "../../utils/utils";
 
 const Product = ({ item }) => {
   const addToCart = () => {

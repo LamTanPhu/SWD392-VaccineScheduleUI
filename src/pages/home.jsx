@@ -1,16 +1,10 @@
-import Banner from "./../assets/images/banner.png"
-import Service1 from "./../assets/images/s1.png"
-import Service2 from "./../assets/images/s2.png"
-import Service3 from "./../assets/images/s3.png"
-import Service4 from "./../assets/images/s4.png"
-// import Product1 from "./../assets/images/p1_1.png"
-// import Product2 from "./../assets/images/p1.png"
-// import Product3 from "./../assets/images/p3.png"
-// import Product4 from "./../assets/images/p4.png"
-// import Product5 from "./../assets/images/p5.png"
-// import Product6 from "./../assets/images/p6.png"
-import Product from "../product"
-import { PRODUCTS } from "../utils/constants"
+import Product from "../components/product";
+import { PRODUCTS } from "../utils/constants";
+import Banner from "./../assets/images/banner.png";
+import Service1 from "./../assets/images/s1.png";
+import Service2 from "./../assets/images/s2.png";
+import Service3 from "./../assets/images/s3.png";
+import Service4 from "./../assets/images/s4.png";
 
 export default function Home() {
   return (
