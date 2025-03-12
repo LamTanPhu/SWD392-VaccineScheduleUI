@@ -1,0 +1,143 @@
+.profile-page {
+    max-width: 98vw;
+    margin: 0 auto;
+    padding-top: 10px; /* Reduced from previous adjustments to lessen gap with VaccineVN header */
+    transition: opacity 0.3s ease;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #007bff, #00c4cc);
+    -webkit-background-clip: text;
+    color: transparent;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.profile-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: -10px; /* Restored to a smaller negative value to maintain original gap with title */
+    min-height: 500px;
+    max-width: 1200px; /* Added max-width to control card size within 98vw */
+    width: 100%; /* Ensure it takes full available width */
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    padding: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-header h5 {
+    font-size: 1.6rem;
+}
+
+.badge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.card-body {
+    padding: 3rem;
+}
+
+.profile-info .info-item {
+    margin-bottom: 2rem;
+    font-size: 1.3rem;
+}
+
+.profile-info .info-item strong {
+    color: #007bff;
+}
+
+.children-section {
+    border-left: 4px solid #007bff;
+    padding-left: 25px;
+}
+
+.children-section h6 {
+    font-size: 1.4rem;
+}
+
+.children-list {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f1f1f1;
+}
+
+.children-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.children-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.children-list::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 4px;
+}
+
+.child-card {
+    transition: background 0.2s ease;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.child-card:hover {
+    background: #e9ecef;
+}
+
+.card-footer {
+    padding: 2rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.btn-animated {
+    padding: 0.75rem 2.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-animated:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .profile-page {
+        max-width: 100%;
+        padding: 10px;
+    }
+    .row {
+        flex-direction: column;
+    }
+    .col-md-5,
+    .col-md-7 {
+        width: 100%;
+    }
+    .children-list {
+        max-height: 250px;
+    }
+    .card-header,
+    .card-body,
+    .card-footer {
+        padding: 1.5rem;
+    }
+    .btn-animated {
+        padding: 0.75rem 1.5rem;
+    }
+    .profile-card {
+        margin-top: 0;
+        min-height: 400px;
+    }
+}
