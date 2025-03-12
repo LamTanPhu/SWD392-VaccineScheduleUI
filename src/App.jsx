@@ -2,13 +2,14 @@ import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import About from "./components/About/about.jsx"; // Import the About component
+import About from "./components/About/about.jsx";
 import AuthPage from "./components/auth/AuthPage";
 import Cart from "./components/cart/cart";
 import Checkout from "./components/checkout/checkout.jsx";
 import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
+import ProfilePage from "./components/profile/ProfilePage"; // Import the ProfilePage component
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
 
@@ -52,8 +53,10 @@ function App() {
                 <Route path="/about" element={<Layout><About /></Layout>} />
                 <Route path="/schedule" element={getLayout(<Schedule />)} />
                 <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
-                <Route path="/cart" element={<Layout><Cart /></Layout>} /> {/* Added Layout */}
-                <Route path="/checkout" element={<Layout><Checkout /></Layout>} /> {/* Added Layout */}
+                <Route path="/cart" element={<Layout><Cart /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                {/* Profile Route */}
+                <Route path="/profile" element={getLayout(<ProfilePage />)} />
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"
