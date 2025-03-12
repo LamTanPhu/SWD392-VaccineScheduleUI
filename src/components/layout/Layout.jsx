@@ -67,7 +67,6 @@ const Header = () => {
                         <Link to="/search" className="btn btn-outline-primary btn-grow rounded-pill">
                             <i className="bi bi-search me-1"></i> Search
                         </Link>
-                        {/* Added Cart Link */}
                         <Link to="/cart" className="btn btn-outline-primary btn-grow rounded-pill">
                             <i className="bi bi-cart me-1"></i> Cart
                         </Link>
@@ -83,11 +82,18 @@ const Header = () => {
                             </button>
                             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
                                 {isLoggedIn ? (
-                                    <li>
-                                        <button className="dropdown-item" onClick={handleLogout}>
-                                            Sign Out
-                                        </button>
-                                    </li>
+                                    <>
+                                        <li>
+                                            <Link to="/profile" className="dropdown-item">
+                                                Profile
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <button className="dropdown-item" onClick={handleLogout}>
+                                                Sign Out
+                                            </button>
+                                        </li>
+                                    </>
                                 ) : (
                                     <>
                                         <li>
@@ -111,7 +117,7 @@ const Header = () => {
     );
 };
 
-// Rest of Layout (Footer and main structure) remains unchanged
+// Footer remains unchanged
 const Footer = () => (
     <footer className="bg-primary text-white py-5 footer-fade">
         <div className="container">
