@@ -6,8 +6,6 @@ import "./checkout.css";
 export default function Checkout() {
   const cart = useMemo(() => JSON.parse(localStorage.getItem("cart")) || [], []);
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
     address: "",
     city: "",
     postalCode: "",
@@ -16,24 +14,47 @@ export default function Checkout() {
     childId: "",
   });
   const [children, setChildren] = useState([]);
+  const [selectedChild, setSelectedChild] = useState(null);
+  const [parentProfile, setParentProfile] = useState(null);
   const [loadingChildren, setLoadingChildren] = useState(true);
+  const [loadingParent, setLoadingParent] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch parent profile and children on mount
   useEffect(() => {
-    const fetchChildren = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get("/api/ChildrenProfile/my-children");
-        console.log("Children Profiles:", response.data); // Debug
-        setChildren(response.data);
+        // Fetch parent profile
+        const profileResponse = await api.get("/api/users/profile");
+        console.log("Parent Profile:", profileResponse.data);
+        const profile = profileResponse.data;
+        setParentProfile(profile);
+        // No need to prefill fullName or email since they're in the profile section
+
+        // Fetch children
+        const childrenResponse = await api.get("/api/ChildrenProfile/my-children");
+        console.log("Children Profiles:", childrenResponse.data);
+        setChildren(childrenResponse.data);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load children profiles");
-        console.error("Error fetching children:", err.response || err);
+        setError(err.response?.data?.message || "Failed to load data");
+        console.error("Error fetching data:", err.response || err);
       } finally {
         setLoadingChildren(false);
+        setLoadingParent(false);
       }
     };
-    fetchChildren();
+    fetchData();
   }, []);
+
+  // Update selected child when childId changes
+  useEffect(() => {
+    if (formData.childId) {
+      const child = children.find((c) => c.id === formData.childId);
+      setSelectedChild(child || null);
+    } else {
+      setSelectedChild(null);
+    }
+  }, [formData.childId, children]);
 
   const total = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price, 0);
@@ -50,8 +71,8 @@ export default function Checkout() {
       alert("Please select a child for this order.");
       return;
     }
-    console.log("Checkout submitted:", { cart, ...formData, total });
-    // TODO: Send to backend API (e.g., POST /api/Order with childId)
+    console.log("Checkout submitted:", { cart, ...formData, total, parentUsername: parentProfile?.username, parentEmail: parentProfile?.email });
+    // TODO: Send to backend API (e.g., POST /api/Order with childId, parent data)
   };
 
   return (
@@ -62,6 +83,40 @@ export default function Checkout() {
       <div className="d-flex justify-content-between">
         <div className="col-6 px-2">
           <form onSubmit={handleSubmit}>
+            {/* Parent Profile Section */}
+            <div className="mb-4">
+              <h5 className="fw-bold mb-3">Parent Profile</h5>
+              {loadingParent ? (
+                <p>Loading parent profile...</p>
+              ) : error ? (
+                <p className="text-danger">{error}</p>
+              ) : parentProfile ? (
+                <div className="card p-3">
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Username</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={parentProfile.username || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control checkout-input"
+                      value={parentProfile.email || ""}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p>No parent profile found.</p>
+              )}
+            </div>
+
+            {/* Child Selection */}
             <div className="mb-4">
               <label className="form-label checkout-label">Select Child</label>
               {loadingChildren ? (
@@ -87,30 +142,73 @@ export default function Checkout() {
                 </select>
               )}
             </div>
+
+            {/* Child Details Form */}
             <div className="mb-4">
-              <label className="form-label checkout-label">Full Name (Parent)</label>
-              <input
-                type="text"
-                name="fullName"
-                className="form-control checkout-input"
-                placeholder="Enter your name..."
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
+              <h5 className="fw-bold mb-3">Selected Child Details</h5>
+              {selectedChild ? (
+                <div className="card p-3">
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Full Name</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={selectedChild.fullName || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Date of Birth</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={new Date(selectedChild.dateOfBirth).toLocaleDateString() || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Gender</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={selectedChild.gender || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Status</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={selectedChild.status || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Address</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={selectedChild.address || ""}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label checkout-label">Account ID</label>
+                    <input
+                      type="text"
+                      className="form-control checkout-input"
+                      value={selectedChild.accountId || ""}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted">Select a child to view details.</p>
+              )}
             </div>
-            <div className="mb-4">
-              <label className="form-label checkout-label">Email</label>
-              <input
-                type="email"
-                name="email"
-                className="form-control checkout-input"
-                placeholder="Enter email address..."
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+
+            {/* Checkout Form (Shipping Details) */}
             <div className="mb-4">
               <label className="form-label checkout-label">Address</label>
               <input
@@ -207,6 +305,7 @@ export default function Checkout() {
             </button>
           </form>
         </div>
+
         <div className="col-6 ps-5">
           <h5 className="fw-bold mb-5 border-bottom pb-1">Order Details</h5>
           {cart.length === 0 ? (
