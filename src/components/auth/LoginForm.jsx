@@ -75,9 +75,9 @@ const LoginForm = () => {
         setSuccess("Login successful! Redirecting...");
         setTimeout(() => {
             if (role === "Admin" || role === "Staff") {
-            window.location.href = "/admin";
+                window.location.href = "/admin";
             } else {
-            window.location.href = "/";
+                window.location.href = "/";
             }
         }, 1500);
         } catch (err) {
