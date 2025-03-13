@@ -1,62 +1,106 @@
-/* checkout.css */
-
 /* Primary color for theme consistency */
 .bg-primary {
-    background-color: #28a745 ;
+    background-color: #28a745;
 }
 
 .text-primary {
-    color: #28a745 ;
+    color: #28a745;
 }
 
 .bg-secondary {
     background-color: #6c757d !important;
 }
 
+/* Container styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
 /* Label styling */
 .checkout-label {
     font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 6px;
 }
 
 /* Input field styling */
 .checkout-input {
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.checkout-input:focus {
+    border-color: #28a745;
+    outline: none;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
 }
 
 /* Payment icon styling */
 .checkout-payment-icon {
-    width: 20px;
-    height: auto;
+    width: 24px;
+    height: 24px;
 }
 
 /* Product image container */
 .checkout-product-image {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
+    position: relative;
 }
 
 /* Quantity badge styling */
 .checkout-quantity-badge {
     width: 20px;
     height: 20px;
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: bold;
+    line-height: 20px;
 }
 
 /* Submit button styling */
 .checkout-submit-btn {
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    transition: transform 0.2s ease-in-out;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #28a745;
+    color: white;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
 .checkout-submit-btn:hover {
     transform: scale(1.05);
+    background-color: #218838;
+}
+
+/* Card styling for order summary */
+.card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Ensure images fit well */
 .img-fluid {
     max-width: 100%;
     height: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .d-flex {
+        flex-direction: column;
+    }
+    .col-6 {
+        width: 100% !important;
+        padding: 0 15px !important;
+    }
+    .ps-5 {
+        padding-left: 0 !important;
+    }
 }
