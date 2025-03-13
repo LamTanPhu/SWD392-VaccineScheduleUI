@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from '../api/axios';
 import "./VaccineListing.css";
 
 const VaccineListing = () => {
     const [items, setItems] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState("All");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,7 +29,8 @@ const VaccineListing = () => {
                     prevents: v.ingredientsDescription || "Not specified",
                     origin: v.manufacturerName && v.manufacturerCountry 
                         ? `${v.manufacturerName}, ${v.manufacturerCountry}` 
-                        : "Unknown" // Combine name and country
+                        : "Unknown",
+                    image: v.image
                 }));
 
                 const mappedPackages = packageData.map(p => ({
@@ -51,17 +54,33 @@ const VaccineListing = () => {
         fetchData();
     }, []);
 
-    const handleSelectToggle = (item) => {
-        const isSelected = selectedItems.find((i) => i.id === item.id);
-        if (isSelected) {
-            setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
+    const handleToggleCart = (item) => {
+        const isInCart = cartItems.find((i) => i.id === item.id);
+        let updatedCart;
+        if (isInCart) {
+            updatedCart = cartItems.filter((i) => i.id !== item.id); // Remove if already in
         } else {
-            setSelectedItems([...selectedItems, item]);
+            updatedCart = [...cartItems, { ...item, quantity: 1 }]; // Add new unique item
         }
+        setCartItems(updatedCart);
     };
 
-    const handleRemove = (itemId) => {
-        setSelectedItems(selectedItems.filter((i) => i.id !== itemId));
+    const handleRemoveFromCart = (itemId) => {
+        const updatedCart = cartItems.filter((i) => i.id !== itemId);
+        setCartItems(updatedCart);
+    };
+
+    const handleRegisterForInjection = () => {
+        if (cartItems.length === 0) return;
+
+        const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
+        // Merge cartItems with currentCart, ensuring no duplicates
+        const updatedCart = [
+            ...currentCart.filter((item) => !cartItems.some((ci) => ci.id === item.id)),
+            ...cartItems,
+        ].map(item => ({ ...item, quantity: 1 })); // Force quantity to 1
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        navigate("/cart");
     };
 
     const filteredItems = items.filter((item) => {
@@ -128,10 +147,10 @@ const VaccineListing = () => {
                                     </div>
                                     <div className="card-footer">
                                         <button
-                                            className={`select-btn ${selectedItems.find((i) => i.id === item.id) ? "selected" : ""}`}
-                                            onClick={() => handleSelectToggle(item)}
+                                            className={`select-btn ${cartItems.find((i) => i.id === item.id) ? "selected" : ""}`}
+                                            onClick={() => handleToggleCart(item)}
                                         >
-                                            {selectedItems.find((i) => i.id === item.id) ? "SELECTED" : "SELECT"}
+                                            {cartItems.find((i) => i.id === item.id) ? "IN CART" : "ADD TO CART"}
                                         </button>
                                     </div>
                                 </div>
@@ -139,21 +158,27 @@ const VaccineListing = () => {
                         )}
                     </div>
                     <div className="selected-items">
-                        <h3>SELECTED ITEMS LIST</h3>
-                        {selectedItems.length === 0 ? (
-                            <p>No items selected.</p>
+                        <h3>CART ITEMS</h3>
+                        {cartItems.length === 0 ? (
+                            <p>No items in cart.</p>
                         ) : (
-                            selectedItems.map((item) => (
+                            cartItems.map((item) => (
                                 <div key={item.id} className="selected-item">
                                     <span>{item.name} - {item.price} USD</span>
-                                    <button className="remove-btn" onClick={() => handleRemove(item.id)}>
+                                    <button className="remove-btn" onClick={() => handleRemoveFromCart(item.id)}>
                                         X
                                     </button>
                                 </div>
                             ))
                         )}
                         <div className="cart-footer">
-                            <button className="register-btn">REGISTER FOR INJECTION</button>
+                            <button
+                                className="register-btn"
+                                onClick={handleRegisterForInjection}
+                                disabled={cartItems.length === 0}
+                            >
+                                REGISTER FOR INJECTION
+                            </button>
                         </div>
                     </div>
                 </div>

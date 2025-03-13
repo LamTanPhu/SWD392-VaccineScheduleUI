@@ -1,60 +1,114 @@
-/* cart.css */
-
 /* Primary color for theme consistency */
 .bg-primary {
-    background-color: #28a745 ;
+    background-color: #28a745;
 }
 
 .text-primary {
-    color: #28a745 ;
+    color: #28a745;
+}
+
+/* Container styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Table styling */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.table thead th {
+    font-weight: bold;
 }
 
 /* Product image styling */
 .cart-product-image {
-    max-width: 150px;
+    max-width: 100px;
+    height: auto;
+    border-radius: 8px;
 }
 
 /* Quantity input styling */
 .cart-quantity-input {
-    max-width: 100px;
-    padding: 0.25rem 0.5rem;
+    max-width: 70px;
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.cart-quantity-input:focus {
+    border-color: #28a745;
+    outline: none;
 }
 
 /* Remove button styling */
 .cart-remove-btn {
-    color: #dc3545; /* Red color for trash icon */
+    color: #dc3545;
+    transition: color 0.2s ease-in-out;
 }
 
 .cart-remove-btn:hover {
-    color: #c82333; /* Darker red on hover */
+    color: #c82333;
     text-decoration: none;
 }
 
 /* Summary card styling */
 .cart-summary {
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Total text styling */
 .cart-total {
     font-size: 1.25rem;
+    font-weight: bold;
 }
 
 /* Checkout button styling */
 .cart-checkout-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: transform 0.2s ease-in-out;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: #28a745;
+    color: white;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
 .cart-checkout-btn:hover {
     transform: scale(1.05);
+    background-color: #218838;
+    color: white;
+    text-decoration: none;
 }
 
 /* Ensure images fit well */
 .img-fluid {
     max-width: 100%;
     height: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .d-flex {
+        flex-direction: column;
+    }
+    .w-75,
+    .w-25 {
+        width: 100% !important;
+    }
+    .ps-5 {
+        padding-left: 0 !important;
+    }
 }
