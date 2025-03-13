@@ -1,27 +1,31 @@
+/* Reduce the top padding of the entire page to bring the "User Profile" title closer to the VaccineVN header */
 .profile-page {
     max-width: 98vw;
     margin: 0 auto;
-    padding-top: 10px; /* Reduced from previous adjustments to lessen gap with VaccineVN header */
+    padding-top: 5px; /* Reduced from 10px to bring "User Profile" closer to the top header */
     transition: opacity 0.3s ease;
 }
 
+/* Adjust the "User Profile" title styling */
 .text-gradient {
     background: linear-gradient(90deg, #007bff, #00c4cc);
     -webkit-background-clip: text;
     color: transparent;
     font-size: 2.5rem;
     font-weight: 700;
+    margin-bottom: 1rem; /* Reduced from default to minimize gap below the title */
 }
 
+/* Make the profile card larger and adjust its positioning */
 .profile-card {
     border: none;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin-top: -10px; /* Restored to a smaller negative value to maintain original gap with title */
-    min-height: 500px;
-    max-width: 1200px; /* Added max-width to control card size within 98vw */
+    margin-top: -5px; /* Slightly reduced from -10px to fine-tune the gap with the title */
+    min-height: 600px; /* Increased from 500px to make the card taller */
+    max-width: 1400px; /* Increased from 1200px to make the card wider */
     width: 100%; /* Ensure it takes full available width */
 }
 
@@ -30,8 +34,9 @@
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
+/* Adjust the card header padding for better spacing */
 .card-header {
-    padding: 2.5rem;
+    padding: 2rem; /* Slightly reduced from 2.5rem for better proportions */
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -44,10 +49,12 @@
     padding: 0.5rem 1rem;
 }
 
+/* Increase padding in the card body to give more space to content */
 .card-body {
-    padding: 3rem;
+    padding: 3.5rem; /* Increased from 3rem to give more breathing room */
 }
 
+/* Adjust the profile info section */
 .profile-info .info-item {
     margin-bottom: 2rem;
     font-size: 1.3rem;
@@ -57,9 +64,10 @@
     color: #007bff;
 }
 
+/* Adjust the children section */
 .children-section {
     border-left: 4px solid #007bff;
-    padding-left: 25px;
+    padding-left: 30px; /* Increased from 25px for better spacing */
 }
 
 .children-section h6 {
@@ -67,7 +75,7 @@
 }
 
 .children-list {
-    max-height: 300px;
+    max-height: 350px; /* Increased from 300px to accommodate more children profiles */
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #007bff #f1f1f1;
@@ -96,6 +104,7 @@
     background: #e9ecef;
 }
 
+/* Adjust the card footer */
 .card-footer {
     padding: 2rem;
     border-top: 1px solid #dee2e6;
@@ -113,10 +122,11 @@
     box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .profile-page {
         max-width: 100%;
-        padding: 10px;
+        padding: 5px; /* Adjusted for smaller screens */
     }
     .row {
         flex-direction: column;
@@ -126,7 +136,7 @@
         width: 100%;
     }
     .children-list {
-        max-height: 250px;
+        max-height: 300px; /* Adjusted for smaller screens */
     }
     .card-header,
     .card-body,
@@ -138,6 +148,10 @@
     }
     .profile-card {
         margin-top: 0;
-        min-height: 400px;
+        min-height: 500px; /* Adjusted for smaller screens */
+        max-width: 100%; /* Ensure it fits on smaller screens */
+    }
+    .children-section {
+        padding-left: 20px; /* Reduced padding for smaller screens */
     }
 }
