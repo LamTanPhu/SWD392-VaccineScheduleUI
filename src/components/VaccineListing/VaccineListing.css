@@ -358,3 +358,16 @@
         font-size: 1.5rem;
     }
 }
+
+.error-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    height: 370px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+}

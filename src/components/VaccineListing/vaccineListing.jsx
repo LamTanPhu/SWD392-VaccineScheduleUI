@@ -1,29 +1,57 @@
 import React, { useEffect, useState } from "react";
+import api from '../api/axios';
 import "./VaccineListing.css"; // Custom CSS for styling
 
 const VaccineListing = () => {
     const [items, setItems] = useState([]); // Combined list of vaccines and packages
     const [selectedItems, setSelectedItems] = useState([]); // Combined selected items
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // State for error handling
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState("All"); // New state for filter type
 
-    // Simulate fetching vaccine and package data
+    // Fetch data from API using Axios
     useEffect(() => {
-        setTimeout(() => {
-            setItems([
-                { id: 1, type: "vaccine", name: "VAXIGRIP TETRA QUADRIVALENT FLU VACCINE", price: 35.60, origin: "Sanofi (France)", prevents: "Influenza" },
-                { id: 2, type: "vaccine", name: "INFLUVAC TETRA QUADRIVALENT FLU VACCINE", price: 35.60, origin: "Abbott (South Korea)", prevents: "Influenza" },
-                { id: 3, type: "vaccine", name: "IVACFLU-S 0.5ML VACCINE", price: 31.50, origin: "IVAC (Vietnam)", prevents: "Influenza (adults 18+)" },
-                { id: 4, type: "vaccine", name: "GCFLU QUADRIVALENT VACCINE", price: 36.00, origin: "Green Cross (South Korea)", prevents: "Influenza" },
-                { id: 5, type: "vaccine", name: "MMR II MEASLES, MUMPS, RUBELLA VACCINE", price: 44.50, origin: "MSD (USA)", prevents: "Measles, Mumps, Rubella" },
-                { id: 6, type: "vaccine", name: "VARILRIX CHICKENPOX VACCINE", price: 108.50, origin: "GSK (Belgium)", prevents: "Chickenpox" },
-                { id: 7, type: "package", name: "Flu Protection Package", price: 90.00, includes: "VAXIGRIP + INFLUVAC", target: "Adults" },
-                { id: 8, type: "package", name: "Childhood Immunity Package", price: 150.00, includes: "MMR II + VARILRIX", target: "Children (1-12 years)" },
-                { id: 9, type: "package", name: "Travel Safety Package", price: 120.00, includes: "IVACFLU + GCFLU", target: "Travelers" },
-            ]);
-            setLoading(false);
-        }, 2000); // Simulate 2-second loading delay
+        const fetchData = async () => {
+            try {
+                // Fetch vaccines
+                const vaccineResponse = await api.get("/api/Vaccine");
+                const vaccineData = vaccineResponse.data;
+
+                // Fetch packages
+                const packageResponse = await api.get("/api/VaccinePackage");
+                const packageData = packageResponse.data;
+
+                // Map API responses to the expected structure
+                const mappedVaccines = vaccineData.map(v => ({
+                    id: v.Id,
+                    type: "vaccine",
+                    name: v.Name,
+                    price: v.Price,
+                    prevents: v.IngredientsDescription || "Not specified", // Fallback if no description
+                    origin: v.BatchId || "Unknown" // Proxy for origin
+                }));
+
+                const mappedPackages = packageData.map(p => ({
+                    id: p.Id,
+                    type: "package",
+                    name: p.PackageName,
+                    price: p.Vaccines.reduce((sum, v) => sum + v.Price, 0), // Sum of vaccine prices
+                    includes: p.Vaccines.map(v => v.Name).join(" + "), // Concatenate vaccine names
+                    target: p.PackageDescription || "General use" // Proxy for target
+                }));
+
+                // Combine vaccines and packages
+                setItems([...mappedVaccines, ...mappedPackages]);
+            } catch (err) {
+                setError(err.message || "An error occurred while fetching data");
+                console.error("Error fetching data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     // Handle item selection toggle (for both vaccines and packages)
@@ -88,6 +116,10 @@ const VaccineListing = () => {
                             Array.from({ length: 6 }).map((_, index) => (
                                 <div key={index} className="vaccine-card skeleton-card"></div>
                             ))
+                        ) : error ? (
+                            <div className="vaccine-card error-card">
+                                <p>Error: {error}</p>
+                            </div>
                         ) : (
                             filteredItems.map((item) => (
                                 <div key={item.id} className="vaccine-card">
