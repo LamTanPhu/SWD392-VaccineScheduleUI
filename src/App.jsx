@@ -9,6 +9,7 @@ import Checkout from "./components/checkout/checkout.jsx";
 import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
+import EditProfile from "./components/profile/EditProfile"; // New import for EditProfile
 import ProfilePage from "./components/profile/ProfilePage"; // Import the ProfilePage component
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
@@ -57,6 +58,8 @@ function App() {
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 {/* Profile Route */}
                 <Route path="/profile" element={getLayout(<ProfilePage />)} />
+                <Route path="/edit-profile" element={getLayout(<EditProfile />)} />
+
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"
