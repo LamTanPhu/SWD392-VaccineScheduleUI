@@ -19,22 +19,15 @@ export default function Checkout() {
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch children profiles for the logged-in user
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        // Get the user's AccountId (adjust based on your auth setup)
-        const user = JSON.parse(localStorage.getItem("user")) || {};
-        const accountId = user.accountId; // Adjust this key based on your user object
-        if (!accountId) {
-          throw new Error("User account ID not found. Please log in again.");
-        }
-
-        const response = await api.get(`/api/ChildrenProfile/account/${accountId}`);
+        const response = await api.get("/api/ChildrenProfile/my-children");
+        console.log("Children Profiles:", response.data); // Debug
         setChildren(response.data);
       } catch (err) {
-        setError(err.message || "Failed to load children profiles");
-        console.error("Error fetching children:", err);
+        setError(err.response?.data?.message || "Failed to load children profiles");
+        console.error("Error fetching children:", err.response || err);
       } finally {
         setLoadingChildren(false);
       }
