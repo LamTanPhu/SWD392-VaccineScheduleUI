@@ -1,47 +1,44 @@
 import React, { useEffect, useState } from "react";
 import api from '../api/axios';
-import "./VaccineListing.css"; // Custom CSS for styling
+import "./VaccineListing.css";
 
 const VaccineListing = () => {
-    const [items, setItems] = useState([]); // Combined list of vaccines and packages
-    const [selectedItems, setSelectedItems] = useState([]); // Combined selected items
+    const [items, setItems] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // State for error handling
+    const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterType, setFilterType] = useState("All"); // New state for filter type
+    const [filterType, setFilterType] = useState("All");
 
-    // Fetch data from API using Axios
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch vaccines
                 const vaccineResponse = await api.get("/api/Vaccine");
                 const vaccineData = vaccineResponse.data;
 
-                // Fetch packages
                 const packageResponse = await api.get("/api/VaccinePackage");
                 const packageData = packageResponse.data;
 
-                // Map API responses to the expected structure
                 const mappedVaccines = vaccineData.map(v => ({
-                    id: v.Id,
+                    id: v.id,
                     type: "vaccine",
-                    name: v.Name,
-                    price: v.Price,
-                    prevents: v.IngredientsDescription || "Not specified", // Fallback if no description
-                    origin: v.BatchId || "Unknown" // Proxy for origin
+                    name: v.name,
+                    price: v.price,
+                    prevents: v.ingredientsDescription || "Not specified",
+                    origin: v.manufacturerName && v.manufacturerCountry 
+                        ? `${v.manufacturerName}, ${v.manufacturerCountry}` 
+                        : "Unknown" // Combine name and country
                 }));
 
                 const mappedPackages = packageData.map(p => ({
-                    id: p.Id,
+                    id: p.id,
                     type: "package",
-                    name: p.PackageName,
-                    price: p.Vaccines.reduce((sum, v) => sum + v.Price, 0), // Sum of vaccine prices
-                    includes: p.Vaccines.map(v => v.Name).join(" + "), // Concatenate vaccine names
-                    target: p.PackageDescription || "General use" // Proxy for target
+                    name: p.packageName,
+                    price: p.vaccines ? p.vaccines.reduce((sum, v) => sum + v.price, 0) : 0,
+                    includes: p.vaccines ? p.vaccines.map(v => v.name).join(" + ") : "No vaccines included",
+                    target: p.packageDescription || "General use"
                 }));
 
-                // Combine vaccines and packages
                 setItems([...mappedVaccines, ...mappedPackages]);
             } catch (err) {
                 setError(err.message || "An error occurred while fetching data");
@@ -54,7 +51,6 @@ const VaccineListing = () => {
         fetchData();
     }, []);
 
-    // Handle item selection toggle (for both vaccines and packages)
     const handleSelectToggle = (item) => {
         const isSelected = selectedItems.find((i) => i.id === item.id);
         if (isSelected) {
@@ -64,12 +60,10 @@ const VaccineListing = () => {
         }
     };
 
-    // Handle removal from selected list
     const handleRemove = (itemId) => {
         setSelectedItems(selectedItems.filter((i) => i.id !== itemId));
     };
 
-    // Filter items based on search and filter type
     const filteredItems = items.filter((item) => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter =
@@ -82,13 +76,10 @@ const VaccineListing = () => {
     return (
         <div className="vaccine-listing-page">
             <div className="container">
-                {/* Categories and Main Title */}
                 <div className="content-header">
                     <button className="category-btn">Categories</button>
                     <h1>VACCINE & PACKAGE INFORMATION</h1>
                 </div>
-
-                {/* Search and Filter */}
                 <div className="search-filter">
                     <input
                         type="text"
@@ -107,10 +98,7 @@ const VaccineListing = () => {
                         <option value="Packages">Packages</option>
                     </select>
                 </div>
-
-                {/* Main Content: Side-by-Side Layout */}
                 <div className="main-content">
-                    {/* Vaccine and Package Product List (Left Column) */}
                     <div className="product-list">
                         {loading ? (
                             Array.from({ length: 6 }).map((_, index) => (
@@ -150,8 +138,6 @@ const VaccineListing = () => {
                             ))
                         )}
                     </div>
-
-                    {/* Selected Items List (Right Column) */}
                     <div className="selected-items">
                         <h3>SELECTED ITEMS LIST</h3>
                         {selectedItems.length === 0 ? (
