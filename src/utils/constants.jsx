@@ -43,3 +43,97 @@ export const PRODUCTS = [
     image_url: Product6
   },
 ];
+
+export const RELATIONSHIPS = [
+  {
+    id: 1,
+    name: "Con",
+  },
+  {
+    id: 2,
+    name: "Bản thân",
+  },
+  {
+    id: 3,
+    name: "Cháu",
+  },
+  {
+    id: 4,
+    name: "Anh",
+  },
+  {
+    id: 5,
+    name: "Chị",
+  },
+  {
+    id: 6,
+    name: "Em",
+  },
+  {
+    id: 7,
+    name: "Cha",
+  },
+  {
+    id: 8,
+    name: "Mẹ",
+  },
+  {
+    id: 9,
+    name: "Vợ",
+  },
+  {
+    id: 10,
+    name: "Chồng",
+  },
+  {
+    id: 11,
+    name: "Ông  ",
+  },
+  {
+    id: 12,
+    name: "Bà",
+  },
+  {
+    id: 13,
+    name: "Cùng hộ khẩu",
+  }
+];
+
+export const VACCINATION_LIST = [
+  {
+    id: 1,
+    child_name: "Trần Văn A",
+    vaccine_name: "Vắc xin dại",
+    status: "new",
+    datetime: "15/03/2025 9:00 AM",
+  },
+  {
+    id: 2,
+    child_name: "Trần Văn A",
+    vaccine_name: "Vắc xin dại",
+    status: "waiting",
+    datetime: "15/03/2025 9:00 AM",
+  },
+  {
+    id: 3,
+    child_name: "Trần Văn A",
+    vaccine_name: "Vắc xin dại",
+    status: "done",
+    datetime: "15/03/2025 9:00 AM",
+  },
+];
+
+export const VACCINATION_STATUS = [
+  {
+    id: "new",
+    name: "Mới đặt lịch",
+  },
+  {
+    id: "waiting",
+    name: "Chờ tiêm",
+  },
+  {
+    id: "done",
+    name: "Đã tiêm",
+  },
+];
