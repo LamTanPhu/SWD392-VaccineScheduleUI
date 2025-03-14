@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 import { formatCurrency } from "../utils/utils";
 import "./checkout.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
+  const navigate = useNavigate();
   const cart = useMemo(() => JSON.parse(localStorage.getItem("cart")) || [], []);
   const [formData, setFormData] = useState({
     address: "",
@@ -19,19 +21,17 @@ export default function Checkout() {
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [loadingParent, setLoadingParent] = useState(true);
   const [error, setError] = useState(null);
+  const [orderError, setOrderError] = useState(null);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   // Fetch parent profile and children on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch parent profile
         const profileResponse = await api.get("/api/users/profile");
         console.log("Parent Profile:", profileResponse.data);
-        const profile = profileResponse.data;
-        setParentProfile(profile);
-        // No need to prefill fullName or email since they're in the profile section
+        setParentProfile(profileResponse.data);
 
-        // Fetch children
         const childrenResponse = await api.get("/api/ChildrenProfile/my-children");
         console.log("Children Profiles:", childrenResponse.data);
         setChildren(childrenResponse.data);
@@ -65,14 +65,74 @@ export default function Checkout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.childId) {
       alert("Please select a child for this order.");
       return;
     }
-    console.log("Checkout submitted:", { cart, ...formData, total, parentUsername: parentProfile?.username, parentEmail: parentProfile?.email });
-    // TODO: Send to backend API (e.g., POST /api/Order with childId, parent data)
+
+    if (cart.length === 0) {
+      alert("Your cart is empty. Add items to proceed.");
+      return;
+    }
+
+    setOrderError(null);
+    setOrderSuccess(false);
+
+    // Map cart items to vaccines (assuming all are vaccines for now)
+    const vaccines = cart.map((item) => ({
+      vaccineId: item.id,
+      quantity: 1, // Hardcoded to 1 as per UI
+    }));
+
+    // If you add a "type" field to cart items, you can split vaccines and packages like this:
+    /*
+    const vaccines = cart
+      .filter((item) => item.type === "vaccine")
+      .map((item) => ({
+        vaccineId: item.id,
+        quantity: 1, // Update if you add quantity support in UI
+      }));
+
+    const vaccinePackages = cart
+      .filter((item) => item.type === "package")
+      .map((item) => ({
+        vaccinePackageId: item.id,
+        quantity: 1,
+      }));
+    */
+
+    // Prepare order data matching OrderRequestDTO
+    const orderData = {
+      profileId: formData.childId,
+      purchaseDate: new Date().toISOString(),
+      vaccines: vaccines,
+      vaccinePackages: [], // Empty for now—uncomment the above block if cart includes packages
+      // Optional fields (not used by backend yet, but included for future-proofing)
+      address: formData.address,
+      city: formData.city,
+      postalCode: formData.postalCode,
+      phone: formData.phone,
+      paymentMethod: formData.paymentMethod,
+      parentUsername: parentProfile?.username,
+      parentEmail: parentProfile?.email,
+    };
+
+    console.log("Submitting order:", orderData);
+
+    try {
+      const response = await api.post("/api/Order", orderData);
+      console.log("Order response:", response.data);
+      setOrderSuccess(true);
+      localStorage.removeItem("cart");
+      setTimeout(() => {
+        navigate("/order-confirmation", { state: { order: response.data } });
+      }, 2000);
+    } catch (err) {
+      setOrderError(err.response?.data?.message || "Failed to place order");
+      console.error("Order submission error:", err.response || err);
+    }
   };
 
   return (
@@ -80,6 +140,16 @@ export default function Checkout() {
       <h1 className="h1 fw-bold text-primary border-bottom border-primary pb-1 mb-5">
         Checkout
       </h1>
+      {orderSuccess && (
+        <div className="alert alert-success" role="alert">
+          Order placed successfully! Redirecting...
+        </div>
+      )}
+      {orderError && (
+        <div className="alert alert-danger" role="alert">
+          {orderError}
+        </div>
+      )}
       <div className="d-flex justify-content-between">
         <div className="col-6 px-2">
           <form onSubmit={handleSubmit}>
