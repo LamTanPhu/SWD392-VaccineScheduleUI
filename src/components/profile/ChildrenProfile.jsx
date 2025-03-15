@@ -168,7 +168,7 @@ const ChildrenProfiles = () => {
                     <button
                         className="btn btn-light btn-sm btn-add-another"
                         onClick={addNewChildForm}
-                        disabled={newChildrenForms.length >= 5} // Optional limit
+                        disabled={newChildrenForms.length >= 2}
                     >
                         Add Another Child
                     </button>
