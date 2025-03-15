@@ -5,23 +5,25 @@ import "./ChildrenProfile.css";
 
 const ChildrenProfiles = () => {
     const navigate = useNavigate();
-    const [children, setChildren] = useState([]);
+    const [childrenForms, setChildrenForms] = useState([]);
+    const [newChildrenForms, setNewChildrenForms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [editingChild, setEditingChild] = useState(null);
-    const [formData, setFormData] = useState({
-        fullName: "",
-        dateOfBirth: "",
-        gender: "",
-        status: "",
-        address: ""
-    });
 
     useEffect(() => {
         const fetchChildren = async () => {
             try {
                 const response = await api.get("/api/ChildrenProfile/my-children");
-                setChildren(response.data);
+                // Initialize forms for existing children
+                const existingForms = response.data.map(child => ({
+                    id: child.id,
+                    fullName: child.fullName,
+                    dateOfBirth: child.dateOfBirth.split("T")[0],
+                    gender: child.gender,
+                    status: child.status,
+                    address: child.address || ""
+                }));
+                setChildrenForms(existingForms);
                 setLoading(false);
             } catch (err) {
                 setError(err.response?.data?.Message || "Failed to load children profiles");
@@ -31,74 +33,106 @@ const ChildrenProfiles = () => {
         fetchChildren();
     }, []);
 
-    const handleChange = (e) => {
+    const handleChange = (e, index, isNew = false) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (isNew) {
+            setNewChildrenForms(prev => {
+                const newForms = [...prev];
+                newForms[index] = { ...newForms[index], [name]: value };
+                return newForms;
+            });
+        } else {
+            setChildrenForms(prev => {
+                const newForms = [...prev];
+                newForms[index] = { ...newForms[index], [name]: value };
+                return newForms;
+            });
+        }
     };
 
-    const resetForm = () => {
-        setFormData({
-            fullName: "",
-            dateOfBirth: "",
-            gender: "",
-            status: "",
-            address: ""
-        });
-        setEditingChild(null);
+    const addNewChildForm = () => {
+        setNewChildrenForms(prev => [
+            ...prev,
+            { fullName: "", dateOfBirth: "", gender: "", status: "", address: "" }
+        ]);
     };
 
-    const handleSubmit = async (e) => {
+    const removeNewChildForm = (index) => {
+        setNewChildrenForms(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleCreateSubmit = async (e) => {
         e.preventDefault();
         setError(null);
 
-        if (!formData.fullName || !formData.dateOfBirth || !formData.gender || !formData.status) {
-            setError("Full Name, Date of Birth, Gender, and Status are required.");
+        const payloads = newChildrenForms.map(child => ({
+            fullName: child.fullName,
+            dateOfBirth: child.dateOfBirth ? new Date(child.dateOfBirth).toISOString() : "",
+            gender: child.gender,
+            status: child.status,
+            address: child.address || null
+        }));
+
+        if (payloads.some(p => !p.fullName || !p.dateOfBirth || !p.gender || !p.status)) {
+            setError("All fields except Address are required for each child.");
             return;
         }
 
-        const payload = {
-            fullName: formData.fullName,
-            dateOfBirth: new Date(formData.dateOfBirth).toISOString(),
-            gender: formData.gender,
-            status: formData.status,
-            address: formData.address || null
-        };
-
-        console.log("Sending payload:", payload);
-
         try {
-            if (editingChild) {
-                await api.put(`/api/ChildrenProfile/${editingChild.id}`, payload);
-                setChildren(children.map(child =>
-                    child.id === editingChild.id ? { ...child, ...payload, dateOfBirth: new Date(payload.dateOfBirth) } : child
-                ));
-            } else {
-                const response = await api.post("/api/ChildrenProfile", payload);
-                setChildren([...children, response.data]); // Add the full response DTO
-            }
-            resetForm();
+            const responses = await Promise.all(
+                payloads.map(payload => api.post("/api/ChildrenProfile", payload))
+            );
+            const newForms = responses.map(res => ({
+                id: res.data.id,
+                fullName: res.data.fullName,
+                dateOfBirth: res.data.dateOfBirth.split("T")[0],
+                gender: res.data.gender,
+                status: res.data.status,
+                address: res.data.address || ""
+            }));
+            setChildrenForms(prev => [...prev, ...newForms]);
+            setNewChildrenForms([]);
         } catch (err) {
             console.error("API Error:", err.response?.data, err.response?.status);
-            setError(err.response?.data?.Message || "Failed to save child profile");
+            setError(err.response?.data?.Message || "Failed to save children profiles");
         }
     };
 
-    const handleEdit = (child) => {
-        setEditingChild(child);
-        setFormData({
+    const handleUpdateSubmit = async (index) => {
+        setError(null);
+        const child = childrenForms[index];
+        const payload = {
             fullName: child.fullName,
-            dateOfBirth: child.dateOfBirth.split("T")[0],
+            dateOfBirth: child.dateOfBirth ? new Date(child.dateOfBirth).toISOString() : "",
             gender: child.gender,
             status: child.status,
-            address: child.address || ""
-        });
+            address: child.address || null
+        };
+
+        if (!payload.fullName || !payload.dateOfBirth || !payload.gender || !payload.status) {
+            setError("All fields except Address are required.");
+            return;
+        }
+
+        try {
+            await api.put(`/api/ChildrenProfile/${child.id}`, payload);
+            setChildrenForms(prev => {
+                const newForms = [...prev];
+                newForms[index] = { ...child, dateOfBirth: child.dateOfBirth }; // Keep date as string
+                return newForms;
+            });
+        } catch (err) {
+            console.error("API Error:", err.response?.data, err.response?.status);
+            setError(err.response?.data?.Message || "Failed to update child profile");
+        }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (index) => {
         if (!window.confirm("Are you sure you want to delete this child profile?")) return;
         try {
-            await api.delete(`/api/ChildrenProfile/${id}`);
-            setChildren(children.filter(child => child.id !== id));
+            const childId = childrenForms[index].id;
+            await api.delete(`/api/ChildrenProfile/${childId}`);
+            setChildrenForms(prev => prev.filter((_, i) => i !== index));
         } catch (err) {
             setError(err.response?.data?.Message || "Failed to delete child profile");
         }
@@ -114,7 +148,7 @@ const ChildrenProfiles = () => {
         );
     }
 
-    if (error && !children.length) {
+    if (error && !childrenForms.length && !newChildrenForms.length) {
         return (
             <div className="alert alert-danger text-center" role="alert">
                 {error}
@@ -127,141 +161,209 @@ const ChildrenProfiles = () => {
 
     return (
         <div className="children-profiles-page container py-2">
-            <h1 className="mb-4 text-gradient text-center">Manage Children Profiles</h1>
-            <div className="card shadow-lg mx-auto">
+            <h1 className="section-title">Manage Children Profiles</h1>
+            <div className="card shadow-sm mx-auto">
                 <div className="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">Children Profiles</h5>
+                    <h5 className="mb-0">Add New Children</h5>
                     <button
-                        className="btn btn-light btn-animated"
-                        onClick={resetForm}
-                        disabled={editingChild !== null}
+                        className="btn btn-light btn-sm btn-add-another"
+                        onClick={addNewChildForm}
+                        disabled={newChildrenForms.length >= 5} // Optional limit
                     >
-                        Add New Child
+                        Add Another Child
                     </button>
                 </div>
                 <div className="card-body">
                     {error && <div className="alert alert-danger mb-3">{error}</div>}
-                    <form onSubmit={handleSubmit} className="mb-4">
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <label className="form-label">Full Name</label>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={formData.fullName}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                    placeholder="Enter full name"
-                                    required
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label">Date of Birth</label>
-                                <input
-                                    type="date"
-                                    name="dateOfBirth"
-                                    value={formData.dateOfBirth}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                    required
-                                />
-                            </div>
-                            <div className="col-md-4">
-                                <label className="form-label">Gender</label>
-                                <select
-                                    name="gender"
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                    className="form-select"
-                                    required
-                                >
-                                    <option value="">Select Gender</option>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                </select>
-                            </div>
-                            <div className="col-md-4">
-                                <label className="form-label">Status</label>
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={formData.status}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                    placeholder="e.g., Active"
-                                    required
-                                />
-                            </div>
-                            <div className="col-md-4">
-                                <label className="form-label">Address (Optional)</label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                    placeholder="Enter address"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-3">
-                            <button type="submit" className="btn btn-primary btn-animated me-2">
-                                {editingChild ? "Update Child" : "Add Child"}
+                    {newChildrenForms.length > 0 && (
+                        <form onSubmit={handleCreateSubmit}>
+                            {newChildrenForms.map((child, index) => (
+                                <div key={`new-${index}`} className="child-form mb-3">
+                                    <div className="row g-3">
+                                        <div className="col-md-6">
+                                            <input
+                                                type="text"
+                                                name="fullName"
+                                                value={child.fullName}
+                                                onChange={(e) => handleChange(e, index, true)}
+                                                className="form-control input-styled"
+                                                placeholder="Enter full name"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <input
+                                                type="date"
+                                                name="dateOfBirth"
+                                                value={child.dateOfBirth}
+                                                onChange={(e) => handleChange(e, index, true)}
+                                                className="form-control input-styled"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="d-flex gap-3">
+                                                <div className="form-check">
+                                                    <input
+                                                        type="radio"
+                                                        id={`new-male-${index}`}
+                                                        name={`new-gender-${index}`}
+                                                        value="M"
+                                                        checked={child.gender === "M"}
+                                                        onChange={(e) => handleChange({ target: { name: "gender", value: "M" }}, index, true)}
+                                                        className="form-check-input"
+                                                    />
+                                                    <label htmlFor={`new-male-${index}`} className="form-check-label">Male</label>
+                                                </div>
+                                                <div className="form-check">
+                                                    <input
+                                                        type="radio"
+                                                        id={`new-female-${index}`}
+                                                        name={`new-gender-${index}`}
+                                                        value="F"
+                                                        checked={child.gender === "F"}
+                                                        onChange={(e) => handleChange({ target: { name: "gender", value: "F" }}, index, true)}
+                                                        className="form-check-input"
+                                                    />
+                                                    <label htmlFor={`new-female-${index}`} className="form-check-label">Female</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <input
+                                                type="text"
+                                                name="status"
+                                                value={child.status}
+                                                onChange={(e) => handleChange(e, index, true)}
+                                                className="form-control input-styled"
+                                                placeholder="e.g., Active"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-12">
+                                            <input
+                                                type="text"
+                                                name="address"
+                                                value={child.address}
+                                                onChange={(e) => handleChange(e, index, true)}
+                                                className="form-control input-styled"
+                                                placeholder="Enter address"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="d-flex justify-content-end mt-2">
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => removeNewChildForm(index)}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            <button type="submit" className="btn btn-primary btn-save-all w-100 mt-3">
+                                Save All Children
                             </button>
-                            {editingChild && (
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary btn-animated"
-                                    onClick={resetForm}
-                                >
-                                    Cancel Edit
-                                </button>
-                            )}
-                        </div>
-                    </form>
+                        </form>
+                    )}
 
-                    {children.length > 0 ? (
-                        <div className="table-responsive">
-                            <table className="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Full Name</th>
-                                        <th>Date of Birth</th>
-                                        <th>Gender</th>
-                                        <th>Status</th>
-                                        <th>Address</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {children.map(child => (
-                                        <tr key={child.id}>
-                                            <td>{child.fullName}</td>
-                                            <td>{new Date(child.dateOfBirth).toLocaleDateString()}</td>
-                                            <td>{child.gender === "M" ? "Male" : "Female"}</td>
-                                            <td>{child.status}</td>
-                                            <td>{child.address || "N/A"}</td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-outline-primary btn-sm me-2"
-                                                    onClick={() => handleEdit(child)}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className="btn btn-outline-danger btn-sm"
-                                                    onClick={() => handleDelete(child.id)}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <p className="text-muted text-center">No children profiles yet. Add one above!</p>
+                    {childrenForms.length > 0 && (
+                        <>
+                            <h5 className="section-subtitle mt-4">Existing Children</h5>
+                            {childrenForms.map((child, index) => (
+                                <div key={child.id} className="child-form mb-3">
+                                    <div className="row g-3">
+                                        <div className="col-md-6">
+                                            <input
+                                                type="text"
+                                                name="fullName"
+                                                value={child.fullName}
+                                                onChange={(e) => handleChange(e, index)}
+                                                className="form-control input-styled"
+                                                placeholder="Enter full name"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <input
+                                                type="date"
+                                                name="dateOfBirth"
+                                                value={child.dateOfBirth}
+                                                onChange={(e) => handleChange(e, index)}
+                                                className="form-control input-styled"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="d-flex gap-3">
+                                                <div className="form-check">
+                                                    <input
+                                                        type="radio"
+                                                        id={`existing-male-${index}`}
+                                                        name={`existing-gender-${index}`}
+                                                        value="M"
+                                                        checked={child.gender === "M"}
+                                                        onChange={(e) => handleChange({ target: { name: "gender", value: "M" }}, index)}
+                                                        className="form-check-input"
+                                                    />
+                                                    <label htmlFor={`existing-male-${index}`} className="form-check-label">Male</label>
+                                                </div>
+                                                <div className="form-check">
+                                                    <input
+                                                        type="radio"
+                                                        id={`existing-female-${index}`}
+                                                        name={`existing-gender-${index}`}
+                                                        value="F"
+                                                        checked={child.gender === "F"}
+                                                        onChange={(e) => handleChange({ target: { name: "gender", value: "F" }}, index)}
+                                                        className="form-check-input"
+                                                    />
+                                                    <label htmlFor={`existing-female-${index}`} className="form-check-label">Female</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <input
+                                                type="text"
+                                                name="status"
+                                                value={child.status}
+                                                onChange={(e) => handleChange(e, index)}
+                                                className="form-control input-styled"
+                                                placeholder="e.g., Active"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-12">
+                                            <input
+                                                type="text"
+                                                name="address"
+                                                value={child.address}
+                                                onChange={(e) => handleChange(e, index)}
+                                                className="form-control input-styled"
+                                                placeholder="Enter address"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="d-flex gap-2 mt-3">
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm btn-update"
+                                            onClick={() => handleUpdateSubmit(index)}
+                                        >
+                                            Update
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => handleDelete(index)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
                     )}
                 </div>
                 <div className="card-footer bg-light d-flex justify-content-end">
