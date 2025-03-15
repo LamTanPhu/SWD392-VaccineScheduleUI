@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import IconTrash from "../icons/IconTrash";
 import { formatCurrency } from "../utils/utils";
 import "./cart.css";
@@ -8,7 +8,6 @@ export default function Cart() {
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    // Remove duplicates and enforce quantity of 1 per item
     const uniqueCart = storedCart.reduce((acc, item) => {
       if (!acc.find((i) => i.id === item.id)) {
         acc.push({ ...item, quantity: 1 });
@@ -26,7 +25,7 @@ export default function Cart() {
   };
 
   const total = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price, 0); // Quantity is always 1
+    return cart.reduce((sum, item) => sum + item.price, 0);
   }, [cart]);
 
   return (
@@ -39,8 +38,12 @@ export default function Cart() {
           <thead className="bg-primary text-white">
             <tr>
               <th className="py-2">Product</th>
-              <th className="py-2" style={{ width: "100px" }}>Quantity</th>
-              <th className="py W-2" style={{ width: "150px" }}>Total</th>
+              <th className="py-2" style={{ width: "100px" }}>
+                Quantity
+              </th>
+              <th className="py-2" style={{ width: "150px" }}>
+                Total
+              </th>
               <th className="py-2" style={{ width: "100px" }}></th>
             </tr>
           </thead>
@@ -67,9 +70,7 @@ export default function Cart() {
                   <td className="p-2 text-center">
                     <span>1</span>
                   </td>
-                  <td className="p-2 text-center">
-                    {formatCurrency(item.price)}
-                  </td>
+                  <td className="p-2 text-center">{formatCurrency(item.price)}</td>
                   <td className="p-2 text-center">
                     <button
                       className="btn btn-link cart-remove-btn p-0"
@@ -87,12 +88,16 @@ export default function Cart() {
           <div className="card cart-summary p-3">
             <p className="d-flex justify-content-between">
               <span>Subtotal:</span>
-              <span><strong>{formatCurrency(total)}</strong></span>
+              <span>
+                <strong>{formatCurrency(total)}</strong>
+              </span>
             </p>
             <hr className="my-3" />
             <p className="d-flex justify-content-between cart-total">
               <span>Total:</span>
-              <span><strong>{formatCurrency(total)}</strong></span>
+              <span>
+                <strong>{formatCurrency(total)}</strong>
+              </span>
             </p>
             <small className="text-muted">Includes VAT</small>
             <p className="text-muted mt-2">
