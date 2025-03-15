@@ -14,6 +14,7 @@ import ProfilePage from "./components/profile/ProfilePage"; // Import the Profil
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
 import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
+import ChildrenProfilePage from "./components/profile/ChildrenProfile"; // Import the ProfilePage component
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
@@ -61,7 +62,11 @@ function App() {
                 {/* Profile Route */}
                 <Route path="/profile" element={getLayout(<ProfilePage />)} />
                 <Route path="/edit-profile" element={getLayout(<EditProfile />)} />
+                <Route path="/children-profiles" element={getLayout(<ChildrenProfilePage />)} />
 
+                {/* <Route path="/cart" element={<Layout><Cart /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                <Route path="/user/info" element={<UserInfo />} /> */}
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"

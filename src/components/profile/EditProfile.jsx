@@ -4,13 +4,13 @@ import api from '../api/axios';
 import './EditProfile.css';
 
 const EditProfile = () => {
-    const [profile, setProfile] = useState({
+    const [formData, setFormData] = useState({
         username: '',
-        email: '',
-        status: '',
+        phoneNumber: '',
+        imageProfile: '',
         vaccineCenterId: ''
     });
-    const [vaccineCenters, setVaccineCenters] = useState([]); // Updated to expect { id, name } objects
+    const [vaccineCenters, setVaccineCenters] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -18,19 +18,18 @@ const EditProfile = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch current profile (this still requires authentication)
                 const profileResponse = await api.get('/api/users/profile');
-                const currentProfile = profileResponse.data;
-                setProfile({
-                    username: currentProfile.username || '',
-                    email: currentProfile.email || '',
-                    status: currentProfile.status || '',
-                    vaccineCenterId: currentProfile.vaccineCenter?.id || ''
+                const data = profileResponse.data;
+                setFormData({
+                    username: data.username || '',
+                    phoneNumber: data.phoneNumber || '',
+                    imageProfile: data.imageProfile || '',
+                    vaccineCenterId: data.vaccineCenter?.id || ''
                 });
 
-                // Fetch list of vaccine centers (using the public endpoint with simplified response)
                 const centersResponse = await api.get('/api/VaccineCenters/public');
-                setVaccineCenters(centersResponse.data); // Directly use the response data
+                setVaccineCenters(centersResponse.data);
+
                 setLoading(false);
             } catch (err) {
                 setError(err.response?.data?.Message || 'Failed to load data');
@@ -42,30 +41,62 @@ const EditProfile = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setProfile(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        const payload = {
+            username: formData.username.trim() || null,
+            phoneNumber: formData.phoneNumber.trim() || '',
+            imageProfile: formData.imageProfile.trim() || '',
+            vaccineCenterId: formData.vaccineCenterId || null
+        };
+
+        console.log("Sending payload:", payload);
+
         try {
-            await api.put('/api/account/update-profile', {
-                username: profile.username,
-                email: profile.email,
-                status: profile.status,
-                vaccineCenterId: profile.vaccineCenterId || null
+            const response = await api.put('/api/users/update-profile', payload, {
+                headers: { 'Content-Type': 'application/json' }
             });
+            console.log("Update succeeded:", response.data);
+
+            // Dispatch event with updated username
+            const updatedUsername = response.data.username || formData.username.trim() || 'User';
+            window.dispatchEvent(new CustomEvent('profileUpdated', { detail: { username: updatedUsername } }));
+
             navigate('/profile');
         } catch (err) {
+            console.error("Update failed:", {
+                status: err.response?.status,
+                data: err.response?.data,
+                message: err.message
+            });
             setError(err.response?.data?.Message || 'Failed to update profile');
         }
     };
 
     if (loading) {
-        return <div className="text-center py-5">Loading...</div>;
+        return (
+            <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="alert alert-danger text-center">{error}</div>;
+        return (
+            <div className="alert alert-danger text-center" role="alert">
+                {error}
+                <button className="btn btn-link" onClick={() => navigate('/profile')}>
+                    Back to Profile
+                </button>
+            </div>
+        );
     }
 
     return (
@@ -82,43 +113,41 @@ const EditProfile = () => {
                             <input
                                 type="text"
                                 name="username"
-                                value={profile.username}
+                                value={formData.username}
                                 onChange={handleChange}
                                 className="form-control"
-                                required
+                                placeholder="Enter username (optional)"
                             />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label">Email</label>
+                            <label className="form-label">Phone Number</label>
                             <input
-                                type="email"
-                                name="email"
-                                value={profile.email}
+                                type="tel"
+                                name="phoneNumber"
+                                value={formData.phoneNumber}
                                 onChange={handleChange}
                                 className="form-control"
-                                required
+                                placeholder="Enter phone number"
                             />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label">Status</label>
-                            <select
-                                name="status"
-                                value={profile.status}
+                            <label className="form-label">Profile Image URL</label>
+                            <input
+                                type="text"
+                                name="imageProfile"
+                                value={formData.imageProfile}
                                 onChange={handleChange}
-                                className="form-select"
-                                required
-                            >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
+                                className="form-control"
+                                placeholder="Enter image URL"
+                            />
                         </div>
                         <div className="mb-3">
                             <label className="form-label">Vaccine Center</label>
                             <select
                                 name="vaccineCenterId"
-                                value={profile.vaccineCenterId}
+                                value={formData.vaccineCenterId}
                                 onChange={handleChange}
-                                className="form-select"
+                                className="form-control"
                             >
                                 <option value="">None</option>
                                 {vaccineCenters.map((center) => (
