@@ -121,6 +121,28 @@ const AdminStaffLayout = ({ children }) => {
                         </li>
                         <li className="mb-3">
                             <Link
+                                to="/admin/orders"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/orders' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-shopping-cart me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Orders'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
+                                to="/admin/profile"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/profile' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-user me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Profile'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
                                 to="/admin/settings"
                                 className={`text-white text-decoration-none sidebar-link ${
                                     location.pathname === '/admin/settings' ? 'active' : ''
@@ -184,6 +206,11 @@ const AdminStaffLayout = ({ children }) => {
                                         <span className="fw-bold">{username}</span>
                                     </button>
                                     <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="adminAuthDropdown">
+                                        <li>
+                                            <Link to="/admin/profile" className="dropdown-item">
+                                                Profile
+                                            </Link>
+                                        </li>
                                         <li>
                                             <button className="dropdown-item" onClick={handleLogout}>
                                                 Sign Out

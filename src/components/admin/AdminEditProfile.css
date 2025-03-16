@@ -1,0 +1,55 @@
+.admin-edit-profile-page {
+    padding: 20px;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #007bff, #0056b3); /* Blue gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.edit-profile-card {
+    max-width: 700px;
+    border: none;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #007bff; /* Blue label text */
+}
+
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.card-footer {
+    border-radius: 0 0 10px 10px;
+    padding: 15px 20px;
+}
+
+.btn-animated {
+    transition: transform 0.2s ease-in-out, background-color 0.3s ease;
+}
+
+.btn-animated:hover {
+    transform: scale(1.05);
+    background-color: #e9ecef;
+}

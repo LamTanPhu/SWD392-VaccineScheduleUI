@@ -10,6 +10,8 @@ const VaccineListing = () => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState("All");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(6); // Matches the skeleton cards count
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -58,9 +60,9 @@ const VaccineListing = () => {
         const isInCart = cartItems.find((i) => i.id === item.id);
         let updatedCart;
         if (isInCart) {
-            updatedCart = cartItems.filter((i) => i.id !== item.id); // Remove if already in
+            updatedCart = cartItems.filter((i) => i.id !== item.id);
         } else {
-            updatedCart = [...cartItems, { ...item, quantity: 1 }]; // Add new unique item
+            updatedCart = [...cartItems, { ...item, quantity: 1 }];
         }
         setCartItems(updatedCart);
     };
@@ -74,11 +76,10 @@ const VaccineListing = () => {
         if (cartItems.length === 0) return;
 
         const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
-        // Merge cartItems with currentCart, ensuring no duplicates
         const updatedCart = [
             ...currentCart.filter((item) => !cartItems.some((ci) => ci.id === item.id)),
             ...cartItems,
-        ].map(item => ({ ...item, quantity: 1 })); // Force quantity to 1
+        ].map(item => ({ ...item, quantity: 1 }));
         localStorage.setItem("cart", JSON.stringify(updatedCart));
         navigate("/cart");
     };
@@ -91,6 +92,17 @@ const VaccineListing = () => {
             (filterType === "Packages" && item.type === "package");
         return matchesSearch && matchesFilter;
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
+    };
 
     return (
         <div className="vaccine-listing-page">
@@ -127,8 +139,12 @@ const VaccineListing = () => {
                             <div className="vaccine-card error-card">
                                 <p>Error: {error}</p>
                             </div>
+                        ) : currentItems.length === 0 ? (
+                            <div className="vaccine-card error-card">
+                                <p>No items found.</p>
+                            </div>
                         ) : (
-                            filteredItems.map((item) => (
+                            currentItems.map((item) => (
                                 <div key={item.id} className="vaccine-card">
                                     <div className="card-content">
                                         <h5 className="card-title">{item.name}</h5>
@@ -157,6 +173,44 @@ const VaccineListing = () => {
                             ))
                         )}
                     </div>
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <nav aria-label="Page navigation" className="d-flex justify-content-center mt-4">
+                            <ul className="pagination">
+                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                    <button
+                                        className="page-link"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </button>
+                                </li>
+                                {Array.from({ length: totalPages }, (_, index) => (
+                                    <li
+                                        key={index + 1}
+                                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                                    >
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(index + 1)}
+                                        >
+                                            {index + 1}
+                                        </button>
+                                    </li>
+                                ))}
+                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                    <button
+                                        className="page-link"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    )}
                     <div className="selected-items">
                         <h3>CART ITEMS</h3>
                         {cartItems.length === 0 ? (
