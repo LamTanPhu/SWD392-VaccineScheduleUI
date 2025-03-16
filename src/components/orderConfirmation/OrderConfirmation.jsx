@@ -1,6 +1,9 @@
-// OrderConfirmation.jsx
+import { faBoxOpen, faSyringe } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../utils/utils";
+import "./OrderConfirmation.css";
 
 export default function OrderConfirmation() {
   const { state } = useLocation();
@@ -8,170 +11,144 @@ export default function OrderConfirmation() {
   const order = state?.order;
 
   if (!order) {
-    return <div>No order data available.</div>;
+    return <div className="no-order-container">No order data available.</div>;
   }
 
   const handleReturnHome = () => {
-    navigate("/"); // Adjust the path to your home page route if different
+    navigate("/");
+  };
+
+  const handleProceedToPayment = () => {
+    navigate("/payment", { state: { order } }); // Placeholder route for payment
   };
 
   return (
-    <div className="container mt-5 mb-5">
-      {/* Inline CSS for custom styling */}
-      <style>
-        {`
-          .order-confirmation-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          }
-          .order-header {
-            color: #007bff;
-            font-weight: 700;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-          }
-          .order-details-card {
-            background-color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            margin-bottom: 20px;
-          }
-          .order-details-card p {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #333;
-          }
-          .order-details-card p strong {
-            color: #555;
-            font-weight: 600;
-          }
-          .section-title {
-            color: #343a40;
-            font-weight: 600;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            border-left: 4px solid #007bff;
-            padding-left: 10px;
-          }
-          .item-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
-          .item-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          }
-          .item-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 15px;
-          }
-          .item-details p {
-            margin: 3px 0;
-            font-size: 15px;
-            color: #444;
-          }
-          .item-details p strong {
-            color: #555;
-            font-weight: 500;
-          }
-          .no-items-text {
-            color: #6c757d;
-            font-style: italic;
-          }
-          .return-home-btn {
-            background-color: #007bff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: 500;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-          }
-          .return-home-btn:hover {
-            background-color: #0056b3;
-          }
-        `}
-      </style>
+    <div className="order-confirmation-page">
+      {/* Header */}
+      <header className="order-header">
+        <h1>Order Confirmation</h1>
+      </header>
 
+      {/* Main Content */}
       <div className="order-confirmation-container">
-        <h1 className="order-header">Order Confirmation</h1>
+        <div className="two-column-layout">
+          {/* Left Column: Order Details */}
+          <div className="left-column">
+            <div className="order-details-card">
+              <h2>Order Details</h2>
+              <div className="detail-item">
+                <span className="detail-label">Order ID:</span>
+                <span className="detail-value">{order.orderId}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Profile ID:</span>
+                <span className="detail-value">{order.profileId}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Purchase Date:</span>
+                <span className="detail-value">
+                  {new Date(order.purchaseDate).toLocaleString()}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Total Amount:</span>
+                <span className="detail-value">{order.totalAmount} items</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Total Price:</span>
+                <span className="detail-value highlight">
+                  {formatCurrency(order.totalOrderPrice)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Status:</span>
+                <span
+                  className={`detail-value status ${
+                    order.status === "Pending" ? "status-pending" : "status-other"
+                  }`}
+                >
+                  {order.status}
+                </span>
+              </div>
+            </div>
+          </div>
 
-        <div className="order-details-card">
-          <h3>Order Details</h3>
-          <p><strong>Order ID:</strong> {order.orderId}</p>
-          <p><strong>Profile ID:</strong> {order.profileId}</p>
-          <p><strong>Purchase Date:</strong> {new Date(order.purchaseDate).toLocaleString()}</p>
-          <p><strong>Total Amount:</strong> {order.totalAmount} items</p>
-          <p><strong>Total Price:</strong> {formatCurrency(order.totalOrderPrice)}</p>
-          <p><strong>Status:</strong> {order.status}</p>
+          {/* Right Column: Vaccines and Packages */}
+          <div className="right-column">
+            {/* Vaccines Ordered */}
+            <div className="section-box">
+              <div className="section-title">Vaccines Ordered</div>
+              {order.vaccineDetails.length === 0 ? (
+                <p className="no-items-text">No individual vaccines in this order.</p>
+              ) : (
+                <div className="items-list">
+                  {order.vaccineDetails.map((vaccine, index) => (
+                    <div key={index} className="item-card">
+                      <div className="item-content">
+                        <FontAwesomeIcon icon={faSyringe} className="item-icon" />
+                        <div className="item-details">
+                          <p className="item-name">{vaccine.vaccineName}</p>
+                          <p className="item-id">
+                            <strong>ID:</strong> {vaccine.vaccineId}
+                          </p>
+                          <p>
+                            <strong>Quantity:</strong> {vaccine.quantity}
+                          </p>
+                          <p className="item-price">
+                            <strong>Total:</strong> {formatCurrency(vaccine.totalPrice)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Vaccine Packages Ordered */}
+            <div className="section-box">
+              <div className="section-title">Vaccine Packages Ordered</div>
+              {order.packageDetails.length === 0 ? (
+                <p className="no-items-text">No vaccine packages in this order.</p>
+              ) : (
+                <div className="items-list">
+                  {order.packageDetails.map((pkg, index) => (
+                    <div key={index} className="item-card">
+                      <div className="item-content">
+                        <FontAwesomeIcon icon={faBoxOpen} className="item-icon" />
+                        <div className="item-details">
+                          <p className="item-name">{pkg.vaccinePackageName}</p>
+                          <p className="item-description">
+                            {pkg.description || "No description available"}
+                          </p>
+                          <p className="item-id">
+                            <strong>ID:</strong> {pkg.vaccinePackageId}
+                          </p>
+                          <p>
+                            <strong>Quantity:</strong> {pkg.quantity}
+                          </p>
+                          <p className="item-price">
+                            <strong>Total:</strong> {formatCurrency(pkg.totalPrice)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <h3 className="section-title">Vaccines Ordered</h3>
-        {order.vaccineDetails.length === 0 ? (
-          <p className="no-items-text">No individual vaccines in this order.</p>
-        ) : (
-          order.vaccineDetails.map((vaccine, index) => (
-            <div key={index} className="item-card">
-              <div className="d-flex align-items-start">
-                {vaccine.image && (
-                  <img
-                    src={vaccine.image}
-                    alt={vaccine.vaccineName}
-                    className="item-image"
-                  />
-                )}
-                <div className="item-details">
-                  <p><strong>Vaccine:</strong> {vaccine.vaccineName}</p>
-                  <p><strong>Vaccine ID:</strong> {vaccine.vaccineId}</p>
-                  <p><strong>Order Vaccine ID:</strong> {vaccine.orderVaccineId}</p>
-                  <p><strong>Quantity:</strong> {vaccine.quantity}</p>
-                  <p><strong>Total Price:</strong> {formatCurrency(vaccine.totalPrice)}</p>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-
-        <h3 className="section-title">Vaccine Packages Ordered</h3>
-        {order.packageDetails.length === 0 ? (
-          <p className="no-items-text">No vaccine packages in this order.</p>
-        ) : (
-          order.packageDetails.map((pkg, index) => (
-            <div key={index} className="item-card">
-              <div className="item-details">
-                <p><strong>Package:</strong> {pkg.vaccinePackageName}</p>
-                <p><strong>Description:</strong> {pkg.description || "No description available"}</p>
-                <p><strong>Package ID:</strong> {pkg.vaccinePackageId}</p>
-                <p><strong>Order Package ID:</strong> {pkg.orderPackageId}</p>
-                <p><strong>Quantity:</strong> {pkg.quantity}</p>
-                <p><strong>Total Price:</strong> {formatCurrency(pkg.totalPrice)}</p>
-              </div>
-            </div>
-          ))
-        )}
-
-        <div className="text-center mt-4">
-          <button
-            className="return-home-btn btn btn-primary"
-            onClick={handleReturnHome}
-          >
+        {/* Footer */}
+        <footer className="order-footer">
+          <button className="return-home-btn" onClick={handleReturnHome}>
             Return to Home Page
           </button>
-        </div>
+          <button className="proceed-payment-btn" onClick={handleProceedToPayment}>
+            Proceed to Payment
+          </button>
+        </footer>
       </div>
     </div>
   );
