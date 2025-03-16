@@ -1,8 +1,11 @@
-import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import About from "./components/About/about.jsx";
+import AdminEditProfile from "./components/admin/AdminEditProfile.jsx"; // New import
+import AdminOrders from "./components/admin/AdminOrders";
+import AdminProfile from "./components/admin/AdminProfile";
 import AuthPage from "./components/auth/AuthPage";
 import Cart from "./components/cart/cart";
 import Checkout from "./components/checkout/checkout.jsx";
@@ -10,16 +13,17 @@ import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
 import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
-import OrderListing from "./components/orderConfirmation/OrderListing"; // Import the OrderListing component
+import OrderListing from "./components/Orderconfirmation/OrderListing";
 import ChildrenProfilePage from "./components/profile/ChildrenProfile";
 import EditProfile from "./components/profile/EditProfile";
 import ProfilePage from "./components/profile/ProfilePage";
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
+import VaccineManagePage from "./components/VaccineManagePage/VaccineManagePage";
+import EditVaccine from "./components/VaccineManagePage/EditVaccine";
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
-const AdminVaccines = () => <h1>Vaccines Management</h1>;
 const AdminSchedules = () => <h1>Schedules Management</h1>;
 const AdminUsers = () => <h1>Users Management</h1>;
 const AdminSettings = () => <h1>Settings</h1>;
@@ -45,11 +49,9 @@ const getLayout = (children) => {
     const token = localStorage.getItem('authToken');
     const userRole = localStorage.getItem('userRole');
 
-    // If no token or not Admin/Staff, use regular Layout
     if (!token || (userRole !== 'Admin' && userRole !== 'Staff')) {
         return <Layout>{children}</Layout>;
     }
-    // If Admin or Staff, use AdminStaffLayout
     return <AdminStaffLayout>{children}</AdminStaffLayout>;
 };
 
@@ -91,10 +93,14 @@ function App() {
                                 <Routes>
                                     <Route index element={<AdminDashboard />} />
                                     <Route path="dashboard" element={<AdminDashboard />} />
-                                    <Route path="vaccines" element={<AdminVaccines />} />
                                     <Route path="schedules" element={<AdminSchedules />} />
                                     <Route path="users" element={<AdminUsers />} />
                                     <Route path="settings" element={<AdminSettings />} />
+                                    <Route path="orders" element={<AdminOrders />} />
+                                    <Route path="profile" element={<AdminProfile />} />
+                                    <Route path="vaccines" element={<VaccineManagePage />} /> {/* Updated route */}
+                                    <Route path="edit-vaccine/:id?" element={<EditVaccine />} /> {/* Unchanged route */}
+                                    <Route path="edit-profile" element={<AdminEditProfile />} /> {/* New route */}
                                 </Routes>
                             </AdminStaffLayout>
                         </PrivateRoute>
