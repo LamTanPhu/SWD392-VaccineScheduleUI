@@ -9,12 +9,13 @@ import Checkout from "./components/checkout/checkout.jsx";
 import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
-import EditProfile from "./components/profile/EditProfile"; // New import for EditProfile
-import ProfilePage from "./components/profile/ProfilePage"; // Import the ProfilePage component
+import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
+import OrderListing from "./components/orderConfirmation/OrderListing"; // Import the OrderListing component
+import ChildrenProfilePage from "./components/profile/ChildrenProfile";
+import EditProfile from "./components/profile/EditProfile";
+import ProfilePage from "./components/profile/ProfilePage";
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
-import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
-import ChildrenProfilePage from "./components/profile/ChildrenProfile"; // Import the ProfilePage component
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
@@ -31,6 +32,12 @@ const PrivateRoute = ({ children }) => {
     const isAuthorized = token && (userRole === 'Admin' || userRole === 'Staff');
     console.log('Is Authorized:', isAuthorized);
     return isAuthorized ? children : <Navigate to="/auth" />;
+};
+
+// AuthenticatedRoute for logged-in users
+const AuthenticatedRoute = ({ children }) => {
+    const token = localStorage.getItem('authToken');
+    return token ? children : <Navigate to="/auth?mode=signin" />;
 };
 
 // Determine layout based on user role
@@ -59,14 +66,22 @@ function App() {
                 <Route path="/cart" element={<Layout><Cart /></Layout>} />
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                {/* Profile Route */}
+                {/* Orders Route - Protected for logged-in users */}
+                <Route
+                    path="/orders"
+                    element={
+                        <AuthenticatedRoute>
+                            <Layout>
+                                <OrderListing />
+                            </Layout>
+                        </AuthenticatedRoute>
+                    }
+                />
+                {/* Profile Routes */}
                 <Route path="/profile" element={getLayout(<ProfilePage />)} />
                 <Route path="/edit-profile" element={getLayout(<EditProfile />)} />
                 <Route path="/children-profiles" element={getLayout(<ChildrenProfilePage />)} />
 
-                {/* <Route path="/cart" element={<Layout><Cart /></Layout>} />
-                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
-                <Route path="/user/info" element={<UserInfo />} /> */}
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"

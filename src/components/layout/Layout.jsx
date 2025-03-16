@@ -22,11 +22,11 @@ const Header = ({ isLoggedIn, username, handleLogout }) => (
                     <Link to="/" className="nav-link fw-medium text-dark nav-hover">Home</Link>
                     <Link to="/about" className="nav-link fw-medium text-dark nav-hover">About</Link>
                     <Link to="/vaccines" className="nav-link fw-medium text-dark nav-hover">Vaccines</Link>
-                    <Link to="/pricing" className="nav-link fw-medium text-dark nav-hover">Pricing</Link>
+                    <Link to="/schedule" className="nav-link fw-medium text-dark nav-hover">Schedule</Link> {/* Changed from Pricing */}
                 </nav>
                 <div className="col-md-3 d-flex justify-content-end gap-3">
-                    <Link to="/search" className="btn btn-outline-primary btn-grow rounded-pill">
-                        <i className="bi bi-search me-1"></i> Search
+                    <Link to="/orders" className="btn btn-outline-primary btn-grow rounded-pill"> {/* Changed from Search */}
+                        <i className="bi bi-list-ul me-1"></i> Orders
                     </Link>
                     <Link to="/cart" className="btn btn-outline-primary btn-grow rounded-pill">
                         <i className="bi bi-cart me-1"></i> Cart
