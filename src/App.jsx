@@ -55,6 +55,9 @@ function App() {
                 <Route path="/cart" element={<Layout><Cart /></Layout>} /> {/* Added Layout */}
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} /> {/* Added Layout */}
                 <Route path="/user/info" element={<UserInfo />} /> {/* User Info */}
+                <Route path="/staff/product-list" element={<ProductList />} />  {/* Vaccine List */}
+                <Route path="/staff/new-product" element={<EditProduct />} /> {/* Edit Vaccine Product */}
+                <Route path="/staff/edit-product/:id" element={<EditProduct />} /> 
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"
