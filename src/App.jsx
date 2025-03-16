@@ -2,13 +2,18 @@ import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import About from "./components/About/about.jsx"; // Import the About component
+import About from "./components/About/about.jsx";
 import AuthPage from "./components/auth/AuthPage";
 import Cart from "./components/cart/cart";
 import Checkout from "./components/checkout/checkout.jsx";
 import HomePage from "./components/homePage/HomePage";
 import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
+import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
+import OrderListing from "./components/orderConfirmation/OrderListing"; // Import the OrderListing component
+import ChildrenProfilePage from "./components/profile/ChildrenProfile";
+import EditProfile from "./components/profile/EditProfile";
+import ProfilePage from "./components/profile/ProfilePage";
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
 
@@ -27,6 +32,12 @@ const PrivateRoute = ({ children }) => {
     const isAuthorized = token && (userRole === 'Admin' || userRole === 'Staff');
     console.log('Is Authorized:', isAuthorized);
     return isAuthorized ? children : <Navigate to="/auth" />;
+};
+
+// AuthenticatedRoute for logged-in users
+const AuthenticatedRoute = ({ children }) => {
+    const token = localStorage.getItem('authToken');
+    return token ? children : <Navigate to="/auth?mode=signin" />;
 };
 
 // Determine layout based on user role
@@ -52,12 +63,25 @@ function App() {
                 <Route path="/about" element={<Layout><About /></Layout>} />
                 <Route path="/schedule" element={getLayout(<Schedule />)} />
                 <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
-                <Route path="/cart" element={<Layout><Cart /></Layout>} /> {/* Added Layout */}
-                <Route path="/checkout" element={<Layout><Checkout /></Layout>} /> {/* Added Layout */}
-                <Route path="/user/info" element={<UserInfo />} /> {/* User Info */}
-                <Route path="/staff/product-list" element={<ProductList />} />  {/* Vaccine List */}
-                <Route path="/staff/new-product" element={<EditProduct />} /> {/* Edit Vaccine Product */}
-                <Route path="/staff/edit-product/:id" element={<EditProduct />} /> 
+                <Route path="/cart" element={<Layout><Cart /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                {/* Orders Route - Protected for logged-in users */}
+                <Route
+                    path="/orders"
+                    element={
+                        <AuthenticatedRoute>
+                            <Layout>
+                                <OrderListing />
+                            </Layout>
+                        </AuthenticatedRoute>
+                    }
+                />
+                {/* Profile Routes */}
+                <Route path="/profile" element={getLayout(<ProfilePage />)} />
+                <Route path="/edit-profile" element={getLayout(<EditProfile />)} />
+                <Route path="/children-profiles" element={getLayout(<ChildrenProfilePage />)} />
+
                 {/* Admin/Staff Routes */}
                 <Route
                     path="/admin/*"
