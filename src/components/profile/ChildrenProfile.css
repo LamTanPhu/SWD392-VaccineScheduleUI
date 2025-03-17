@@ -1,0 +1,79 @@
+/* General container */
+.children-profiles-page {
+    max-width: 800px; /* Matches screenshot width */
+}
+
+/* Section title */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff; /* Bootstrap primary */
+    border-bottom: 2px solid #007bff;
+    width: fit-content;
+    padding-bottom: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Subsection title */
+.section-subtitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #007bff;
+    border-bottom: 1px solid #007bff;
+    width: fit-content;
+    padding-bottom: 0.25rem;
+}
+
+/* Child form container */
+.child-form {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Styled inputs */
+.input-styled {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    transition: border-color 0.3s ease;
+}
+
+.input-styled:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button styling */
+.btn-add-another {
+    border-radius: 1rem;
+    padding: 0.25rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn-save-all {
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+.btn-update {
+    border-radius: 0.5rem;
+    padding: 0.25rem 1rem;
+}
+
+/* Form check (radio buttons) */
+.form-check {
+    margin-right: 1rem;
+}
+
+/* Button animations */
+.btn-animated {
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.btn-animated:hover {
+    transform: scale(1.05);
+}
