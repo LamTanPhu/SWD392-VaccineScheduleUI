@@ -7,6 +7,7 @@ import Schedule from "./pages/schedule";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
+import Dashboard from "./pages/admin/dashboard";
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
@@ -48,6 +49,7 @@ function App() {
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="settings" element={<AdminSettings />} />
                         <Route path="/schedule" element={<Schedule />} />
+                        <Route path="/admin/dashboard" element={<Dashboard />} />
                         {/* Add new admin routes here */}
                     </Route>
                 </Routes>

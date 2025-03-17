@@ -200,4 +200,3 @@ const Modal = ({ isOpen, closeModal, onSubmit }) => {
     </_Modal>
   );
 };
-item.id
