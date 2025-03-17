@@ -1,149 +1,229 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '.././api/axios';
 
 const EditVaccine = () => {
     const { id } = useParams();
-    const [vaccine, setVaccine] = useState({
-        id: '',
-        name: '',
-        price: '',
-        description: '',
-        imageUrl: '',
-        type: 'single',
-        status: 'active',
-        categories: []
-    });
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        Name: '',
+        IngredientsDescription: '',
+        UnitOfVolume: '',
+        MinAge: '',
+        MaxAge: '',
+        BetweenPeriod: '',
+        QuantityAvailable: '',
+        Price: '',
+        ProductionDate: '',
+        ExpirationDate: '',
+        VaccineCategoryId: '',
+        BatchId: '',
+        Image: null
+    });
+    const [categories, setCategories] = useState([]);
+    const [batches, setBatches] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (id) {
-            const fetchVaccine = async () => {
-                try {
-                    const response = await api.get(`/api/vaccines/${id}`); // Adjust endpoint
-                    setVaccine(response.data);
-                } catch (err) {
-                    console.error('Failed to fetch vaccine:', err);
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+                // Fetch categories
+                const categoryResponse = await api.get('/api/VaccineCategory');
+                const activeCategories = categoryResponse.data.filter(cat => cat.status === 'Active' && cat.deletedTime === null);
+                setCategories(activeCategories);
+
+                // Fetch batches
+                const batchResponse = await api.get('/api/VaccineBatch');
+                const activeBatches = batchResponse.data.filter(batch => batch.activeStatus === 'Active');
+                setBatches(activeBatches);
+
+                // Fetch existing vaccine data if editing
+                if (id) {
+                    const vaccineResponse = await api.get(`/api/Vaccine/${id}`);
+                    const vaccine = vaccineResponse.data;
+                    setFormData({
+                        Name: vaccine.name,
+                        IngredientsDescription: vaccine.ingredientsDescription || '',
+                        UnitOfVolume: vaccine.unitOfVolume || '',
+                        MinAge: vaccine.minAge || '',
+                        MaxAge: vaccine.maxAge || '',
+                        BetweenPeriod: vaccine.betweenPeriod || '',
+                        QuantityAvailable: vaccine.quantityAvailable || '',
+                        Price: vaccine.price || '',
+                        ProductionDate: vaccine.productionDate || '',
+                        ExpirationDate: vaccine.expirationDate || '',
+                        VaccineCategoryId: vaccine.vaccineCategoryId || '',
+                        BatchId: vaccine.batchId || '',
+                        Image: null // Image is not pre-filled; user can upload a new one
+                    });
                 }
-            };
-            fetchVaccine();
-        }
+            } catch (err) {
+                setError(err.response?.data?.message || 'Failed to load data');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, [id]);
 
-    const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        if (name === 'imageUrl' && files) {
-            const file = files[0];
-            setVaccine(prev => ({ ...prev, imageUrl: URL.createObjectURL(file) }));
-            return;
-        }
-        setVaccine(prev => ({ ...prev, [name]: value }));
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleFileChange = (e) => {
+        setFormData({ ...formData, Image: e.target.files[0] });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+        setLoading(true);
+
         try {
+            const data = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key === 'Image' && formData[key]) {
+                    data.append('Image', formData[key]);
+                } else {
+                    data.append(key, formData[key]);
+                }
+            });
+
             if (id) {
-                await api.put(`/api/vaccines/${id}`, vaccine);
+                await api.put(`/api/Vaccine/${id}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             } else {
-                await api.post('/api/vaccines', vaccine);
+                await api.post('/api/Vaccine', data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             }
             navigate('/admin/vaccines');
         } catch (err) {
-            console.error('Failed to save vaccine:', err);
+            setError(err.response?.data?.message || 'Failed to save vaccine');
+        } finally {
+            setLoading(false);
         }
     };
 
-    return (
-        <div className="edit-vaccine-page container py-2">
-            <h1 className="text-gradient text-center mb-4">
-                {id ? 'Edit Vaccine' : 'Add Vaccine'}
-            </h1>
-            <div className="card shadow-lg mx-auto" style={{ maxWidth: '800px' }}>
-                <div className="card-header bg-primary text-white">
-                    <h5>{id ? 'Edit Vaccine' : 'Add New Vaccine'}</h5>
+    if (loading) {
+        return (
+            <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                 </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="alert alert-danger text-center" role="alert">
+                {error}
+                <button className="btn btn-link" onClick={() => window.location.reload()}>
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="container py-4">
+            <h1 className="text-gradient text-center mb-4">{id ? 'Edit' : 'Create'} Vaccine</h1>
+            <div className="card shadow-lg">
                 <div className="card-body">
                     <form onSubmit={handleSubmit}>
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="mb-3">
-                                    <label className="form-label">Name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={vaccine.name}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">Price</label>
-                                    <input
-                                        type="number"
-                                        name="price"
-                                        value={vaccine.price}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">Image</label>
-                                    <input
-                                        type="file"
-                                        name="imageUrl"
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                    {vaccine.imageUrl && (
-                                        <img src={vaccine.imageUrl} alt="Vaccine" className="mt-2 img-fluid" style={{ maxHeight: '200px' }} />
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="mb-3">
-                                    <label className="form-label">Type</label>
-                                    <select
-                                        name="type"
-                                        value={vaccine.type}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                        required
-                                    >
-                                        <option value="single">Single Vaccine</option>
-                                        <option value="package">Vaccine Package</option>
-                                    </select>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">Status</label>
-                                    <select
-                                        name="status"
-                                        value={vaccine.status}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                        required
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                {/* Categories can be added later with an API call */}
-                            </div>
+                        <div className="mb-3">
+                            <label className="form-label">Name</label>
+                            <input type="text" className="form-control" name="Name" value={formData.Name} onChange={handleInputChange} required />
                         </div>
-                        <button type="submit" className="btn btn-primary btn-animated">
-                            Save Vaccine
-                        </button>
+                        <div className="mb-3">
+                            <label className="form-label">Ingredients Description</label>
+                            <textarea className="form-control" name="IngredientsDescription" value={formData.IngredientsDescription} onChange={handleInputChange} />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Unit of Volume (mL)</label>
+                            <input type="number" className="form-control" name="UnitOfVolume" value={formData.UnitOfVolume} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Minimum Age</label>
+                            <input type="number" className="form-control" name="MinAge" value={formData.MinAge} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Maximum Age</label>
+                            <input type="number" className="form-control" name="MaxAge" value={formData.MaxAge} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Between Period</label>
+                            <input type="date" className="form-control" name="BetweenPeriod" value={formData.BetweenPeriod} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Quantity Available</label>
+                            <input type="number" className="form-control" name="QuantityAvailable" value={formData.QuantityAvailable} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Price (VND)</label>
+                            <input type="number" className="form-control" name="Price" value={formData.Price} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Production Date</label>
+                            <input type="date" className="form-control" name="ProductionDate" value={formData.ProductionDate} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Expiration Date</label>
+                            <input type="date" className="form-control" name="ExpirationDate" value={formData.ExpirationDate} onChange={handleInputChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Category</label>
+                            <select
+                                className="form-select"
+                                name="VaccineCategoryId"
+                                value={formData.VaccineCategoryId}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Select a category</option>
+                                {categories.map(category => (
+                                    <option key={category.id} value={category.id}>
+                                        {category.categoryName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Batch</label>
+                            <select
+                                className="form-select"
+                                name="BatchId"
+                                value={formData.BatchId}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Select a batch</option>
+                                {batches.map(batch => (
+                                    <option key={batch.batchNumber} value={batch.batchNumber}>
+                                        {batch.batchNumber} (Qty: {batch.quantity})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Image</label>
+                            <input type="file" className="form-control" name="Image" onChange={handleFileChange} accept="image/*" />
+                        </div>
+                        <div className="d-flex justify-content-end gap-2">
+                            <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/vaccines')}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="btn btn-primary" disabled={loading}>
+                                {loading ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
                     </form>
-                </div>
-                <div className="card-footer bg-light d-flex justify-content-end">
-                    <button
-                        className="btn btn-outline-secondary btn-animated"
-                        onClick={() => navigate('/admin/vaccines')}
-                    >
-                        Cancel
-                    </button>
                 </div>
             </div>
         </div>
