@@ -58,13 +58,13 @@ const getLayout = (children) => {
 };
 
 function App() {
-    const _Layout = useMemo(() => { //Đoạn layout này có gì em config theo ý em nha
-        const isAdmin = localStorage.getItem("isAdmin") ?? true;
-        if (isAdmin) {
-          return AdminLayout;
-        }
-        return Layout;
-      }, []);
+    // const _Layout = useMemo(() => { // Đã có layout nên anh để cmt nha
+    //     const isAdmin = localStorage.getItem("isAdmin") ?? true;
+    //     if (isAdmin) {
+    //       return AdminLayout;
+    //     }
+    //     return Layout;
+    //   }, []);
     return (
         <Router>
             <_Layout>
