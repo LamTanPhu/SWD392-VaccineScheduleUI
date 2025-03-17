@@ -99,6 +99,28 @@ const AdminStaffLayout = ({ children }) => {
                         </li>
                         <li className="mb-3">
                             <Link
+                                to="/admin/batches"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/batches' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-boxes me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Batches'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
+                                to="/admin/categories"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/categories' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-tags me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Categories'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
                                 to="/admin/schedules"
                                 className={`text-white text-decoration-none sidebar-link ${
                                     location.pathname === '/admin/schedules' ? 'active' : ''

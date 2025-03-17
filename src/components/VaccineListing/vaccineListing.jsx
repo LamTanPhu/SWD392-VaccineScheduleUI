@@ -11,7 +11,7 @@ const VaccineListing = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState("All");
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(6); // Matches the skeleton cards count
+    const [itemsPerPage, setItemsPerPage] = useState(6); // Default matches skeleton cards
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,7 +81,7 @@ const VaccineListing = () => {
             ...cartItems,
         ].map(item => ({ ...item, quantity: 1 }));
         localStorage.setItem("cart", JSON.stringify(updatedCart));
-        navigate("/cart");
+        navigate("/checkout");
     };
 
     const filteredItems = items.filter((item) => {
@@ -99,10 +99,27 @@ const VaccineListing = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
+    // Reset to page 1 when filteredItems changes (e.g., due to search or filter)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filteredItems]);
+
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
+
+    const handleItemsPerPageChange = (e) => {
+        setItemsPerPage(Number(e.target.value));
+        setCurrentPage(1); // Reset to page 1 when items per page changes
+    };
+
+    // Debugging log
+    useEffect(() => {
+        console.log("Filtered Items:", filteredItems.length, "Current Page:", currentPage, "Total Pages:", totalPages, "Items Per Page:", itemsPerPage);
+    }, [filteredItems, currentPage, totalPages, itemsPerPage]);
 
     return (
         <div className="vaccine-listing-page">
@@ -173,44 +190,6 @@ const VaccineListing = () => {
                             ))
                         )}
                     </div>
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <nav aria-label="Page navigation" className="d-flex justify-content-center mt-4">
-                            <ul className="pagination">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </button>
-                                </li>
-                                {Array.from({ length: totalPages }, (_, index) => (
-                                    <li
-                                        key={index + 1}
-                                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() => handlePageChange(index + 1)}
-                                        >
-                                            {index + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
-                    )}
                     <div className="selected-items">
                         <h3>CART ITEMS</h3>
                         {cartItems.length === 0 ? (
@@ -236,6 +215,61 @@ const VaccineListing = () => {
                         </div>
                     </div>
                 </div>
+                {/* Moved Pagination Outside main-content */}
+                {(filteredItems.length > 0) && (
+                    <div className="pagination-controls">
+                        <div className="items-per-page">
+                            <label htmlFor="itemsPerPage" className="form-label mb-0 text-primary">Items per page:</label>
+                            <select
+                                id="itemsPerPage"
+                                className="form-select form-select-sm"
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                            </select>
+                        </div>
+                        {totalPages > 1 && (
+                            <nav aria-label="Page navigation">
+                                <ul className="pagination">
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Previous
+                                        </button>
+                                    </li>
+                                    {Array.from({ length: totalPages }, (_, index) => (
+                                        <li
+                                            key={index + 1}
+                                            className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                                        >
+                                            <button
+                                                className="page-link"
+                                                onClick={() => handlePageChange(index + 1)}
+                                            >
+                                                {index + 1}
+                                            </button>
+                                        </li>
+                                    ))}
+                                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
