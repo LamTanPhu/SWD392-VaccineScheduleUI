@@ -2,6 +2,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { useMemo } from "react";
 import About from "./components/About/about.jsx"; // Import the About component
 import AuthPage from "./components/auth/AuthPage";
 import Cart from "./components/cart/cart";
@@ -11,6 +12,10 @@ import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
 import Schedule from "./components/Schedule/schedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
+import UserList from "./pages/admin/user/list";
+import UserDetail from "./pages/admin/user/detail";
+import AdminLayout from "./components/common/admin-layout";
+
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
@@ -43,8 +48,16 @@ const getLayout = (children) => {
 };
 
 function App() {
+    const _Layout = useMemo(() => { //Đoạn layout này có gì em config theo ý em nha
+        const isAdmin = localStorage.getItem("isAdmin") ?? true;
+        if (isAdmin) {
+          return AdminLayout;
+        }
+        return Layout;
+      }, []);
     return (
         <Router>
+            <_Layout>
             <Routes>
                 {/* Public Routes (always use Layout) */}
                 <Route path="/" element={<Layout><HomePage /></Layout>} />
@@ -65,11 +78,13 @@ function App() {
                         <PrivateRoute>
                             <AdminStaffLayout>
                                 <Routes>
+                                    <Route path="/admin/users" element={<UserList />} /> {/* AdminUsers */} 
+                                    <Route path="/admin/user/detail/:id" element={<UserDetail />} /> {/* AdminUser Details Layout */}
                                     <Route index element={<AdminDashboard />} />
                                     <Route path="dashboard" element={<AdminDashboard />} />
                                     <Route path="vaccines" element={<AdminVaccines />} />
                                     <Route path="schedules" element={<AdminSchedules />} />
-                                    <Route path="users" element={<AdminUsers />} />
+                                    {/* <Route path="users" element={<AdminUsers />} /> */}
                                     <Route path="settings" element={<AdminSettings />} />
                                 </Routes>
                             </AdminStaffLayout>
@@ -77,6 +92,7 @@ function App() {
                     }
                 />
             </Routes>
+            </_Layout>
         </Router>
     );
 }
