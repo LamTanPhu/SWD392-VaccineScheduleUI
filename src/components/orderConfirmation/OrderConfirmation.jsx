@@ -19,7 +19,7 @@ export default function OrderConfirmation() {
   };
 
   const handleProceedToPayment = () => {
-    navigate("/payment", { state: { order } }); // Placeholder route for payment
+    navigate("/payment", { state: { order } });
   };
 
   return (

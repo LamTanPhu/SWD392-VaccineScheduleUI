@@ -1,157 +1,215 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../api/axios';
-import './PaymentPage.css';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import api from "../api/axios";
+import { formatCurrency } from "../utils/utils";
+import "./PaymentPage.css";
 
-const PaymentPage = () => {
+export default function PaymentPage() {
     const { state } = useLocation();
     const navigate = useNavigate();
     const order = state?.order;
+    const [paymentMethod, setPaymentMethod] = useState("vnpay"); // Default to VNPay
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [paymentError, setPaymentError] = useState(null);
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [paymentUrl, setPaymentUrl] = useState('');
-    const [qrCodeUrl, setQrCodeUrl] = useState('');
-    const [paymentStatus, setPaymentStatus] = useState('Pending');
-    const [polling, setPolling] = useState(false);
+    // Redirect to home if no order data is passed
+    if (!order) {
+        return (
+        <div className="container mt-5">
+            <p>No order data available. Please return to the checkout page.</p>
+            <button className="btn btn-primary" onClick={() => navigate("/")}>
+            Go Home
+            </button>
+        </div>
+        );
+    }
 
-    useEffect(() => {
-        if (!order) {
-        navigate('/order-confirmation');
-        return;
-        }
+    const handlePaymentMethodChange = (e) => {
+        setPaymentMethod(e.target.value);
+        setPaymentError(null); // Clear any previous errors
+    };
 
-        if (order.paymentMethod !== 'vnpay') {
-        setError('This order is set for cash payment. Please contact an admin to process it.');
-        return;
-        }
+    const initiateVNPayPayment = async () => {
+        setPaymentLoading(true);
+        setPaymentError(null);
 
-        initiatePayment();
-    }, [order, navigate]);
-
-    const initiatePayment = async () => {
-        if (!order) return;
-
-        setLoading(true);
-        setError(null);
-
-        try {
-        // Prepare VNPay payment request
-        const requestData = {
-            Amount: order.totalOrderPrice / 100, // Convert to VND units (VNPay expects amount in cents)
-            OrderId: order.orderId,
-            OrderInfo: `Payment for Order #${order.orderId}`,
+        const paymentRequest = {
+        OrderId: order.orderId,
+        Amount: order.totalOrderPrice,
+        OrderInfo: `Thanh toan don hang ${order.orderId}`,
         };
 
-        // Option 1: Get Payment URL
-        const urlResponse = await api.post('/api/Payment/vnpay', requestData);
-        setPaymentUrl(urlResponse.data.PaymentUrl);
-
-        // Option 2: Get QR Code (uncomment to use QR instead of URL)
-        /*
-        const qrResponse = await api.post('/api/Payment/vnpay-qr', requestData, {
-            responseType: 'arraybuffer',
-        });
-        const base64 = btoa(
-            new Uint8Array(qrResponse.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
-        );
-        setQrCodeUrl(`data:image/png;base64,${base64}`);
-        */
-
-        setLoading(false);
-        } catch (err) {
-        setError(err.response?.data?.message || 'Failed to initiate payment');
-        setLoading(false);
-        }
-    };
-
-    const checkPaymentStatus = async () => {
-        if (!order?.orderId) return;
+        console.log("Step 1: Sending payment request to backend:", paymentRequest);
 
         try {
-        const response = await api.get(`/api/Order/${order.orderId}`);
-        const updatedOrder = response.data;
-        setPaymentStatus(updatedOrder.status || 'Pending');
+        const response = await api.post("/api/Payment/vnpay", paymentRequest);
+        console.log("Step 2: Received response from backend:", response.data);
 
-        if (updatedOrder.status === 'Paid') {
-            setPolling(false);
-            navigate('/payment-confirmation', { state: { order: updatedOrder } }); // Redirect to a confirmation page
+        const { paymentUrl } = response.data; // Fixed: Match the lowercase 'paymentUrl' key
+
+        if (paymentUrl) {
+            console.log("Step 3: Payment URL received (not redirecting yet):", paymentUrl);
+
+            // Temporarily disable automatic redirect for debugging
+            /*
+            try {
+            console.log("Trying redirect method 1: window.location.href");
+            window.location.href = paymentUrl;
+            console.log("Redirect method 1 initiated successfully");
+            } catch (err) {
+            console.error("Redirect method 1 (window.location.href) failed:", err);
+            setPaymentError("Redirect method 1 failed. Trying alternative method...");
+
+            try {
+                console.log("Trying redirect method 2: window.open");
+                window.open(paymentUrl, "_blank");
+                console.log("Redirect method 2 (window.open) initiated successfully");
+                setPaymentError("Payment page opened in a new tab. Please complete the payment there.");
+            } catch (err2) {
+                console.error("Redirect method 2 (window.open) failed:", err2);
+                setPaymentError("Failed to open VNPay payment page. Please try the manual link below.");
+
+                setPaymentError(
+                <>
+                    Failed to redirect automatically. Please click this link to proceed to VNPay: <br />
+                    <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+                    Go to VNPay Payment Page
+                    </a>
+                </>
+                );
+            }
+            }
+            */
+
+            // Display the URL in the UI for manual inspection
+            setPaymentError(
+            <>
+                Payment URL generated. Check the console and click this link to proceed manually: <br />
+                <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+                {paymentUrl}
+                </a>
+            </>
+            );
+        } else {
+            throw new Error("Payment URL not received from the server.");
         }
         } catch (err) {
-        setError(err.response?.data?.message || 'Failed to check payment status');
+        console.error("Step 4: Error initiating VNPay payment:", err);
+        setPaymentError(
+            err.response?.data?.message || "Failed to initiate VNPay payment. Check the console for details."
+        );
+        } finally {
+        setPaymentLoading(false);
         }
     };
 
-    useEffect(() => {
-        let interval;
-        if (paymentUrl && !polling) {
-        setPolling(true);
-        window.location.href = paymentUrl; // Redirect to VNPay payment page
-        interval = setInterval(checkPaymentStatus, 5000); // Poll every 5 seconds
+    const handleConfirmPayment = () => {
+        if (paymentMethod === "vnpay") {
+        initiateVNPayPayment();
+        } else {
+        setPaymentError("You have selected Cash. Please proceed to the facility to complete your payment.");
         }
-
-        return () => clearInterval(interval);
-    }, [paymentUrl, polling, navigate, order?.orderId]);
-
-    const handleManualCheck = () => {
-        checkPaymentStatus();
     };
 
-    if (loading) {
-        return (
-        <div className="text-center py-5">
-            <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Processing payment...</span>
-            </div>
-        </div>
-        );
-    }
-
-    if (error) {
-        return (
-        <div className="container py-4">
-            <div className="alert alert-danger text-center" role="alert">
-            {error}
-            <button className="btn btn-link" onClick={() => setError(null)}>
-                Try Again
-            </button>
-            </div>
-            <button className="btn btn-primary" onClick={handleManualCheck}>
-            Check Payment Status
-            </button>
-        </div>
-        );
-    }
+    const handleBackToConfirmation = () => {
+        navigate("/order-confirmation", { state: { order } });
+    };
 
     return (
-        <div className="container py-4">
-        <h1 className="text-gradient text-center mb-4">Payment</h1>
-        <div className="card shadow-lg">
-            <div className="card-header bg-primary text-white">
-            <h5>Order Summary</h5>
+        <div className="container mt-5 payment-page">
+        <h1 className="mb-4">Payment</h1>
+
+        {paymentError && (
+            <div className="alert alert-danger" role="alert">
+            {paymentError}
             </div>
-            <div className="card-body">
-            <p><strong>Order ID:</strong> {order?.orderId}</p>
-            <p><strong>Total Price:</strong> {order?.totalOrderPrice} VND</p>
-            <p><strong>Payment Method:</strong> {order?.paymentMethod}</p>
-            {paymentUrl && (
-                <p>Please complete the payment on the VNPay page that has opened. You will be redirected automatically after payment.</p>
-            )}
-            {qrCodeUrl && (
-                <div>
-                <p>Scan the QR code below to pay with VNPay:</p>
-                <img src={qrCodeUrl} alt="VNPay QR Code" style={{ maxWidth: '200px' }} />
+        )}
+
+        <div className="card p-4 mb-4">
+            <h3>Order Summary</h3>
+            <p>
+            <strong>Order ID:</strong> {order.orderId}
+            </p>
+            <p>
+            <strong>Total Price:</strong> {formatCurrency(order.totalOrderPrice)}
+            </p>
+
+            <div className="mb-3">
+            <label className="form-label">Select Payment Method</label>
+            <div>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                <input
+                    type="radio"
+                    id="vnpay"
+                    name="paymentMethod"
+                    value="vnpay"
+                    className="form-check-input"
+                    checked={paymentMethod === "vnpay"}
+                    onChange={handlePaymentMethodChange}
+                />
+                <img
+                    className="checkout-payment-icon"
+                    src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png"
+                    alt="VN Pay"
+                    style={{ width: "24px", height: "24px" }}
+                />
+                <label htmlFor="vnpay" className="form-check-label">
+                    VNPay
+                </label>
                 </div>
+                <div className="d-flex align-items-center gap-2">
+                <input
+                    type="radio"
+                    id="cash"
+                    name="paymentMethod"
+                    value="cash"
+                    className="form-check-input"
+                    checked={paymentMethod === "cash"}
+                    onChange={handlePaymentMethodChange}
+                />
+                <img
+                    className="checkout-payment-icon"
+                    src="https://cdn-icons-png.flaticon.com/512/2460/2460470.png"
+                    alt="Cash"
+                    style={{ width: "24px", height: "24px" }}
+                />
+                <label htmlFor="cash" className="form-check-label">
+                    Cash
+                </label>
+                </div>
+            </div>
+            </div>
+
+            {paymentMethod === "cash" && (
+            <div className="alert alert-info">
+                <p>
+                You have selected Cash as your payment method. Please proceed to the facility to complete your payment.
+                </p>
+            </div>
             )}
+
+            {paymentLoading && paymentMethod === "vnpay" && (
+            <div className="text-center">
+                <p>Attempting to process VNPay payment...</p>
+                <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+                </div>
             </div>
-            <div className="card-footer text-center">
-            <button className="btn btn-primary" onClick={handleManualCheck} disabled={polling}>
-                {polling ? 'Checking...' : 'Check Payment Status'}
+            )}
+        </div>
+
+        <div className="d-flex gap-3">
+            <button className="btn btn-secondary" onClick={handleBackToConfirmation}>
+            Back to Confirmation
             </button>
-            </div>
+            <button
+            className="btn btn-primary"
+            onClick={handleConfirmPayment}
+            disabled={paymentLoading}
+            >
+            {paymentLoading ? "Processing..." : "Confirm Payment"}
+            </button>
         </div>
         </div>
     );
-};
-
-export default PaymentPage;
+}

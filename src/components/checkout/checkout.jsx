@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"; // Added useMemo to the import
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { formatCurrency } from "../utils/utils";
@@ -12,7 +12,6 @@ export default function Checkout() {
     city: "",
     postalCode: "",
     phone: "",
-    paymentMethod: "vnpay",
     childId: "",
   });
   const [children, setChildren] = useState([]);
@@ -107,7 +106,6 @@ export default function Checkout() {
       city: formData.city,
       postalCode: formData.postalCode,
       phone: formData.phone,
-      paymentMethod: formData.paymentMethod,
       parentUsername: parentProfile?.username,
       parentEmail: parentProfile?.email,
     };
@@ -116,7 +114,7 @@ export default function Checkout() {
       const response = await api.post("/api/Order", orderData);
       setOrderSuccess(true);
       localStorage.removeItem("cart");
-      setCartState([]); // Clear cart state after successful order
+      setCartState([]);
       setTimeout(() => {
         navigate("/order-confirmation", { state: { order: response.data } });
       }, 2000);
@@ -131,7 +129,6 @@ export default function Checkout() {
       city: "",
       postalCode: "",
       phone: "",
-      paymentMethod: "vnpay",
       childId: "",
     });
     setSelectedChild(null);
@@ -368,49 +365,6 @@ export default function Checkout() {
             </div>
           )}
           <div className="card p-3 mt-5">
-            <div className="mb-3">
-              <label className="form-label checkout-label">Payment Method</label>
-              <div>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <input
-                    type="radio"
-                    id="vnpay"
-                    name="paymentMethod"
-                    value="vnpay"
-                    className="form-check-input"
-                    checked={formData.paymentMethod === "vnpay"}
-                    onChange={handleChange}
-                  />
-                  <img
-                    className="checkout-payment-icon"
-                    src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png"
-                    alt="VN Pay"
-                  />
-                  <label htmlFor="vnpay" className="form-check-label">
-                    VN Pay
-                  </label>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <input
-                    type="radio"
-                    id="cash"
-                    name="paymentMethod"
-                    value="cash"
-                    className="form-check-input"
-                    checked={formData.paymentMethod === "cash"}
-                    onChange={handleChange}
-                  />
-                  <img
-                    className="checkout-payment-icon"
-                    src="https://cdn-icons-png.flaticon.com/512/2460/2460470.png"
-                    alt="Cash"
-                  />
-                  <label htmlFor="cash" className="form-check-label">
-                    Cash
-                  </label>
-                </div>
-              </div>
-            </div>
             <p className="d-flex justify-content-between">
               <span>Subtotal:</span>
               <span>{formatCurrency(total)}</span>
