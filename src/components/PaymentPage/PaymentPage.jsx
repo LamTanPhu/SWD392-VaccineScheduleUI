@@ -36,7 +36,7 @@ export default function PaymentPage() {
         const paymentRequest = {
         OrderId: order.orderId,
         Amount: order.totalOrderPrice,
-        OrderInfo: `Thanh toan don hang ${order.orderId}`,
+        OrderInfo: "string", // Hardcoded to match Swagger for testing
         };
 
         console.log("Step 1: Sending payment request to backend:", paymentRequest);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from "../utils/utils";
 import api from "../api/axios";
+import { jwtDecode } from 'jwt-decode'; // Changed to named import
 import './OrderListing.css';
 
 const OrderListing = () => {
@@ -18,9 +19,16 @@ const OrderListing = () => {
                     throw new Error('User not logged in');
                 }
 
-                console.log('Base URL:', api.defaults.baseURL); // Log the base URL
-                console.log('Fetching orders from /api/Order...');
-                const response = await api.get('/api/Order'); // Ensure correct endpoint
+                // Decode JWT to get user ID
+                const decodedToken = jwtDecode(token); // Use named export
+                const parentId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                if (!parentId) {
+                    throw new Error('User ID not found in token');
+                }
+
+                console.log('Base URL:', api.defaults.baseURL);
+                console.log(`Fetching orders for parentId: ${parentId} from /api/Order/by-parent/${parentId}...`);
+                const response = await api.get(`/api/Order/by-parent/${parentId}`);
                 console.log('Orders response:', response.data);
                 setOrders(response.data);
                 setLoading(false);
