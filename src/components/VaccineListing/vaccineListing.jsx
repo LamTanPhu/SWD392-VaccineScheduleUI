@@ -10,6 +10,8 @@ const VaccineListing = () => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState("All");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(6); // Default matches skeleton cards
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -58,9 +60,9 @@ const VaccineListing = () => {
         const isInCart = cartItems.find((i) => i.id === item.id);
         let updatedCart;
         if (isInCart) {
-            updatedCart = cartItems.filter((i) => i.id !== item.id); // Remove if already in
+            updatedCart = cartItems.filter((i) => i.id !== item.id);
         } else {
-            updatedCart = [...cartItems, { ...item, quantity: 1 }]; // Add new unique item
+            updatedCart = [...cartItems, { ...item, quantity: 1 }];
         }
         setCartItems(updatedCart);
     };
@@ -74,13 +76,12 @@ const VaccineListing = () => {
         if (cartItems.length === 0) return;
 
         const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
-        // Merge cartItems with currentCart, ensuring no duplicates
         const updatedCart = [
             ...currentCart.filter((item) => !cartItems.some((ci) => ci.id === item.id)),
             ...cartItems,
-        ].map(item => ({ ...item, quantity: 1 })); // Force quantity to 1
+        ].map(item => ({ ...item, quantity: 1 }));
         localStorage.setItem("cart", JSON.stringify(updatedCart));
-        navigate("/cart");
+        navigate("/checkout");
     };
 
     const filteredItems = items.filter((item) => {
@@ -91,6 +92,34 @@ const VaccineListing = () => {
             (filterType === "Packages" && item.type === "package");
         return matchesSearch && matchesFilter;
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Reset to page 1 when filteredItems changes (e.g., due to search or filter)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filteredItems]);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleItemsPerPageChange = (e) => {
+        setItemsPerPage(Number(e.target.value));
+        setCurrentPage(1); // Reset to page 1 when items per page changes
+    };
+
+    // Debugging log
+    useEffect(() => {
+        console.log("Filtered Items:", filteredItems.length, "Current Page:", currentPage, "Total Pages:", totalPages, "Items Per Page:", itemsPerPage);
+    }, [filteredItems, currentPage, totalPages, itemsPerPage]);
 
     return (
         <div className="vaccine-listing-page">
@@ -127,8 +156,12 @@ const VaccineListing = () => {
                             <div className="vaccine-card error-card">
                                 <p>Error: {error}</p>
                             </div>
+                        ) : currentItems.length === 0 ? (
+                            <div className="vaccine-card error-card">
+                                <p>No items found.</p>
+                            </div>
                         ) : (
-                            filteredItems.map((item) => (
+                            currentItems.map((item) => (
                                 <div key={item.id} className="vaccine-card">
                                     <div className="card-content">
                                         <h5 className="card-title">{item.name}</h5>
@@ -182,6 +215,61 @@ const VaccineListing = () => {
                         </div>
                     </div>
                 </div>
+                {/* Moved Pagination Outside main-content */}
+                {(filteredItems.length > 0) && (
+                    <div className="pagination-controls">
+                        <div className="items-per-page">
+                            <label htmlFor="itemsPerPage" className="form-label mb-0 text-primary">Items per page:</label>
+                            <select
+                                id="itemsPerPage"
+                                className="form-select form-select-sm"
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                            </select>
+                        </div>
+                        {totalPages > 1 && (
+                            <nav aria-label="Page navigation">
+                                <ul className="pagination">
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Previous
+                                        </button>
+                                    </li>
+                                    {Array.from({ length: totalPages }, (_, index) => (
+                                        <li
+                                            key={index + 1}
+                                            className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                                        >
+                                            <button
+                                                className="page-link"
+                                                onClick={() => handlePageChange(index + 1)}
+                                            >
+                                                {index + 1}
+                                            </button>
+                                        </li>
+                                    ))}
+                                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

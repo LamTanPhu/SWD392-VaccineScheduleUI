@@ -1,0 +1,49 @@
+.admin-profile-page {
+    padding: 20px;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #28a745, #1a3c34);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.profile-card {
+    max-width: 700px;
+    border: none;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.profile-info .info-item {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.profile-info strong {
+    color: #28a745;
+    margin-right: 10px;
+}
+
+.card-footer {
+    border-radius: 0 0 10px 10px;
+    padding: 15px 20px;
+}
+
+.btn-animated {
+    transition: transform 0.2s ease-in-out, background-color 0.3s ease;
+}
+
+.btn-animated:hover {
+    transform: scale(1.05);
+    background-color: #e9ecef;
+}
