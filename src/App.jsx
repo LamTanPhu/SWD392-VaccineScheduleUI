@@ -14,10 +14,12 @@ import AdminStaffLayout from "./components/layout/AdminStaffLayout";
 import Layout from "./components/layout/Layout";
 import OrderConfirmation from "./components/orderConfirmation/OrderConfirmation";
 import OrderListing from "./components/Orderconfirmation/OrderListing";
+import PaymentPage from "./components/PaymentPage/PaymentPage"; // New import for PaymentPage
 import ChildrenProfilePage from "./components/profile/ChildrenProfile";
 import EditProfile from "./components/profile/EditProfile";
 import ProfilePage from "./components/profile/ProfilePage";
-import Schedule from "./components/Schedule/schedule";
+import AdminSchedule from "./components/Schedule/AdminSchedule"; // Add this importconst AdminUsers = () => <h1>Users Management</h1>;
+import ClientSchedule from "./components/Schedule/ClientSchedule";
 import VaccineListing from "./components/VaccineListing/VaccineListing";
 import BatchManagePage from "./components/VaccineManagePage/BatchManagementPage";
 import CategoryManagePage from "./components/VaccineManagePage/CategoryManagePage";
@@ -25,11 +27,9 @@ import EditBatch from "./components/VaccineManagePage/EditBatch";
 import EditCategory from "./components/VaccineManagePage/EditCategory";
 import EditVaccine from "./components/VaccineManagePage/EditVaccine";
 import VaccineManagePage from "./components/VaccineManagePage/VaccineManagePage";
-import PaymentPage from "./components/PaymentPage/PaymentPage"; // New import for PaymentPage
 
 // Placeholder admin pages
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
-const AdminSchedules = () => <h1>Schedules Management</h1>;
 const AdminUsers = () => <h1>Users Management</h1>;
 const AdminSettings = () => <h1>Settings</h1>;
 
@@ -71,7 +71,7 @@ const PrivateRoute = ({ children }) => {
             <Route path="/" element={<Layout><HomePage /></Layout>} />
             <Route path="/auth" element={<Layout><AuthPage /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
-            <Route path="/schedule" element={getLayout(<Schedule />)} />
+            <Route path="/schedule" element={getLayout(<ClientSchedule />)} />
             <Route path="/vaccines" element={getLayout(<VaccineListing />)} />
             <Route path="/cart" element={<Layout><Cart /></Layout>} />
             <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
@@ -103,7 +103,7 @@ const PrivateRoute = ({ children }) => {
                     <Routes>
                     <Route index element={<AdminDashboard />} />
                     <Route path="dashboard" element={<AdminDashboard />} />
-                    <Route path="schedules" element={<AdminSchedules />} />
+                    <Route path="schedules" element={<AdminSchedule />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="orders" element={<AdminOrders />} />
