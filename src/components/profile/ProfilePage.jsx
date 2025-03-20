@@ -24,6 +24,7 @@ const Profile = () => {
                     email: response.data.email || "",
                     role: response.data.role || "",
                     status: response.data.status || "",
+                    phoneNumber: response.data.phoneNumber || "", // Added phoneNumber
                     vaccineCenter: response.data.vaccineCenter || null,
                     childrenProfiles: response.data.childrenProfiles || [],
                 };
@@ -89,6 +90,9 @@ const Profile = () => {
                                 </p>
                                 <p className="info-item">
                                     <strong>Status:</strong> <span className="text-success">{profile.status || "N/A"}</span>
+                                </p>
+                                <p className="info-item">
+                                    <strong>Phone:</strong> <span className="text-muted">{profile.phoneNumber || "N/A"}</span>
                                 </p>
                                 {profile.vaccineCenter && (
                                     <p className="info-item">
