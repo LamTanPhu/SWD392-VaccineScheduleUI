@@ -29,7 +29,7 @@ import EditVaccine from "./components/VaccineManagePage/EditVaccine";
 import VaccineManagePage from "./components/VaccineManagePage/VaccineManagePage";
 
 // Placeholder admin pages
-const AdminDashboard = () => <h1>Admin Dashboard</h1>;
+import AdminDashboard from "./components/admin/AdminDashboard";
 const AdminUsers = () => <h1>Users Management</h1>;
 const AdminSettings = () => <h1>Settings</h1>;
 
