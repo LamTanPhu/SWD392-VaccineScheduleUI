@@ -15,7 +15,7 @@ export default function Sidebar() {
         {
             name: "Vaccines",
             path: "/admin/vaccines",
-            icon: <IconVaccine color={"#fff"} />   
+            icon: <IconVaccine color={"#fff"} />
         },
         {
             name: "Schedules",

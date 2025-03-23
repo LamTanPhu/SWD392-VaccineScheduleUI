@@ -320,6 +320,86 @@
     }
 }
 
+/* Updated Pagination CSS */
+.pagination-controls {
+    display: flex;
+    justify-content: center; /* Center the entire pagination block */
+    align-items: center;
+    width: 100%;
+    margin-top: 30px; /* Increased margin for spacing below product list */
+    padding: 0 10px;
+    gap: 20px; /* Space between items per page and pagination */
+}
+
+.items-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.items-per-page label {
+    color: #0d4c92;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.items-per-page select {
+    padding: 3px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e6f0fa; /* Light blue background */
+    color: #0d4c92;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.items-per-page select:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(33, 146, 255, 0.3);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 2px; /* Tighter gap between buttons */
+    margin: 0;
+    padding: 0;
+}
+
+.page-item {
+    list-style: none;
+}
+
+.page-link {
+    display: inline-block;
+    padding: 5px 12px;
+    border: none; /* Remove border */
+    border-radius: 5px;
+    background-color: #e6f0fa; /* Light blue background */
+    color: #0d4c92; /* Darker blue text */
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover,
+.page-link:focus {
+    background-color: #2192FF; /* Hover state */
+    color: #fff;
+}
+
+.page-item.active .page-link {
+    background-color: #2192FF; /* Active state */
+    color: #fff;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
     .main-content {
         flex-direction: column;
@@ -330,6 +410,11 @@
     .selected-items {
         margin-top: 20px;
         max-width: 100%;
+    }
+    .pagination-controls {
+        flex-direction: row; /* Keep row layout for tablets */
+        gap: 15px;
+        justify-content: center;
     }
 }
 
@@ -356,6 +441,10 @@
     }
     .content-header h1 {
         font-size: 1.5rem;
+    }
+    .pagination-controls {
+        flex-direction: column;
+        gap: 10px;
     }
 }
 

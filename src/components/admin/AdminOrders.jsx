@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatCurrency } from "../utils/utils";
-import api from "../api/axios";
-import { jwtDecode } from 'jwt-decode'; // Changed to named import
-import './OrderListing.css';
+import { formatCurrency } from '.././utils/utils';
+import api from '.././api/axios';
+import './AdminOrders.css';
 
-const OrderListing = () => {
+const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -19,16 +18,9 @@ const OrderListing = () => {
                     throw new Error('User not logged in');
                 }
 
-                // Decode JWT to get user ID
-                const decodedToken = jwtDecode(token); // Use named export
-                const parentId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-                if (!parentId) {
-                    throw new Error('User ID not found in token');
-                }
-
                 console.log('Base URL:', api.defaults.baseURL);
-                console.log(`Fetching orders for parentId: ${parentId} from /api/Order/by-parent/${parentId}...`);
-                const response = await api.get(`/api/Order/by-parent/${parentId}`);
+                console.log('Fetching all orders for admin from /api/Order...');
+                const response = await api.get('/api/Order');
                 console.log('Orders response:', response.data);
                 setOrders(response.data);
                 setLoading(false);
@@ -58,12 +50,12 @@ const OrderListing = () => {
     }
 
     if (orders.length === 0) {
-        return <div className="text-center py-5">You have no orders yet.</div>;
+        return <div className="text-center py-5">No orders found.</div>;
     }
 
     return (
-        <div className="orders-page">
-            <h1 className="mb-4">Your Orders</h1>
+        <div className="admin-orders-page">
+            <h1 className="mb-4 text-gradient text-center">All Orders</h1>
             <div className="orders-list">
                 {orders.map((order) => (
                     <div key={order.orderId} className="order-card">
@@ -78,6 +70,9 @@ const OrderListing = () => {
                             </span>
                         </div>
                         <p>
+                            <strong>Profile ID:</strong> {order.profileId}
+                        </p>
+                        <p>
                             <strong>Purchase Date:</strong>{' '}
                             {new Date(order.purchaseDate).toLocaleString()}
                         </p>
@@ -90,7 +85,7 @@ const OrderListing = () => {
                         </p>
                         <div className="order-actions">
                             <button
-                                className="btn btn-outline-primary btn-sm"
+                                className="btn btn-outline-primary btn-sm btn-animated"
                                 onClick={() => handleViewDetails(order)}
                             >
                                 View Details
@@ -103,4 +98,4 @@ const OrderListing = () => {
     );
 };
 
-export default OrderListing;
+export default AdminOrders;

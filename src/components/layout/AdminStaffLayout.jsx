@@ -5,6 +5,7 @@ import './adminStaffLayout.css';
 
 const AdminStaffLayout = ({ children }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isVaccineMenuOpen, setIsVaccineMenuOpen] = useState(false); // New state for submenu
     const [username, setUsername] = useState('Admin');
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const navigate = useNavigate();
@@ -34,6 +35,10 @@ const AdminStaffLayout = ({ children }) => {
 
     const handleSidebarToggle = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
+    const handleVaccineMenuToggle = () => {
+        setIsVaccineMenuOpen(!isVaccineMenuOpen); // Toggle submenu
     };
 
     const handleLogout = () => {
@@ -86,16 +91,66 @@ const AdminStaffLayout = ({ children }) => {
                                 <span>{!isSidebarCollapsed && 'Dashboard'}</span>
                             </Link>
                         </li>
+                        {/* Vaccines with Submenu */}
                         <li className="mb-3">
-                            <Link
-                                to="/admin/vaccines"
+                            <div
                                 className={`text-white text-decoration-none sidebar-link ${
-                                    location.pathname === '/admin/vaccines' ? 'active' : ''
+                                    location.pathname.startsWith('/admin/vaccines') ||
+                                    location.pathname === '/admin/batches' ||
+                                    location.pathname === '/admin/categories'
+                                        ? 'active'
+                                        : ''
                                 }`}
+                                onClick={handleVaccineMenuToggle}
+                                style={{ cursor: 'pointer' }}
                             >
                                 <i className="fas fa-syringe me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Vaccines'}</span>
-                            </Link>
+                                {!isSidebarCollapsed && (
+                                    <i
+                                        className={`fas ${
+                                            isVaccineMenuOpen ? 'fa-chevron-down' : 'fa-chevron-right'
+                                        } float-end`}
+                                    ></i>
+                                )}
+                            </div>
+                            {isVaccineMenuOpen && !isSidebarCollapsed && (
+                                <ul className="list-unstyled submenu ms-4 mt-2">
+                                    <li className="mb-2">
+                                        <Link
+                                            to="/admin/vaccines"
+                                            className={`text-white text-decoration-none sidebar-link ${
+                                                location.pathname === '/admin/vaccines' ? 'active' : ''
+                                            }`}
+                                        >
+                                            <i className="fas fa-vial me-2"></i>
+                                            Vaccines
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link
+                                            to="/admin/batches"
+                                            className={`text-white text-decoration-none sidebar-link ${
+                                                location.pathname === '/admin/batches' ? 'active' : ''
+                                            }`}
+                                        >
+                                            <i className="fas fa-boxes me-2"></i>
+                                            Batches
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link
+                                            to="/admin/categories"
+                                            className={`text-white text-decoration-none sidebar-link ${
+                                                location.pathname === '/admin/categories' ? 'active' : ''
+                                            }`}
+                                        >
+                                            <i className="fas fa-tags me-2"></i>
+                                            Categories
+                                        </Link>
+                                    </li>
+                                </ul>
+                            )}
                         </li>
                         <li className="mb-3">
                             <Link
@@ -121,13 +176,24 @@ const AdminStaffLayout = ({ children }) => {
                         </li>
                         <li className="mb-3">
                             <Link
-                                to="/admin/settings"
+                                to="/admin/orders"
                                 className={`text-white text-decoration-none sidebar-link ${
-                                    location.pathname === '/admin/settings' ? 'active' : ''
+                                    location.pathname === '/admin/orders' ? 'active' : ''
                                 }`}
                             >
-                                <i className="fas fa-cog me-2"></i>
-                                <span>{!isSidebarCollapsed && 'Settings'}</span>
+                                <i className="fas fa-shopping-cart me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Orders'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
+                                to="/admin/profile"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/profile' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-user me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Profile'}</span>
                             </Link>
                         </li>
                     </ul>
@@ -145,7 +211,6 @@ const AdminStaffLayout = ({ children }) => {
                 <header className="admin-header">
                     <div className="container py-2">
                         <div className="d-flex align-items-center justify-content-between w-100">
-                            {/* Sidebar Toggle Button on the Left */}
                             <button
                                 className="btn btn-outline-primary sidebar-toggle"
                                 onClick={handleSidebarToggle}
@@ -153,7 +218,6 @@ const AdminStaffLayout = ({ children }) => {
                             >
                                 <i className={`fas ${isSidebarCollapsed ? 'fa-arrow-right' : 'fa-bars'}`}></i>
                             </button>
-                            {/* Right-side Buttons (Moved to the Right) */}
                             <div className="d-flex align-items-center justify-content-end gap-3">
                                 <button
                                     className="btn btn-outline-primary position-relative rounded-circle"
@@ -185,6 +249,11 @@ const AdminStaffLayout = ({ children }) => {
                                     </button>
                                     <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="adminAuthDropdown">
                                         <li>
+                                            <Link to="/admin/profile" className="dropdown-item">
+                                                Profile
+                                            </Link>
+                                        </li>
+                                        <li>
                                             <button className="dropdown-item" onClick={handleLogout}>
                                                 Sign Out
                                             </button>
@@ -196,7 +265,6 @@ const AdminStaffLayout = ({ children }) => {
                     </div>
                 </header>
 
-                {/* Subheader with Breadcrumb (Moved Closer to Sidebar) */}
                 <div className="admin-subheader">
                     <div className="container py-2">
                         <nav aria-label="breadcrumb">
