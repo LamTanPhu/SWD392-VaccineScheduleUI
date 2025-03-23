@@ -1,6 +1,7 @@
 import Sidebar from "./sidebar";
 
 export default function AdminLayout({ children }) {
+
     return <div>
         <main className="grid grid-cols-[300px_1fr]">
             <aside>

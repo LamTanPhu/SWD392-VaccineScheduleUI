@@ -59,7 +59,6 @@ const PrivateRoute = ({ children }) => {
     }
     return <AdminStaffLayout>{children}</AdminStaffLayout>;
     };
-
     // Placeholder for PaymentConfirmation route (to be implemented later)
     const PaymentConfirmationPlaceholder = () => <h1>Payment Confirmation (To Be Implemented)</h1>;
 
