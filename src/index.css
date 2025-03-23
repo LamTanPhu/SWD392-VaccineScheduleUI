@@ -12,6 +12,7 @@
 }
 
 /* Chrome, Safari, Edge, Opera */
+
 /* input.quantity::-webkit-outer-spin-button,
 input.quantity::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -19,6 +20,7 @@ input.quantity::-webkit-inner-spin-button {
 }
 
 /* Firefox */
+
 /* input[type=number].quantity {
   -moz-appearance: textfield;
 } */
