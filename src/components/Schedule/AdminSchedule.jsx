@@ -1,46 +1,34 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { format, startOfWeek, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, isEqual, parse } from "date-fns";
+import { addDays, eachDayOfInterval, endOfMonth, format, isBefore, isEqual, startOfMonth, startOfWeek } from "date-fns";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
-import { jwtDecode } from 'jwt-decode';
 import "./Schedule.css";
 
-// Constants as provided
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const HOURS = ["7:00", "9:00", "11:00", "13:00", "15:00", "17:00", "19:00"];
 const DOCTORS = [
-  { id: 1, name: "Mr. 1" },
-  { id: 2, name: "Mr. 2" },
-  { id: 3, name: "Mr. 3" },
-  { id: 4, name: "Mr. 4" },
-  { id: 5, name: "Mr. 5" },
-  { id: 6, name: "Mr. 6" },
-  { id: 7, name: "Mr. 7" },
-  { id: 8, name: "Mr. 8" },
+    { id: 1, name: "Mr. 1" },
+    { id: 2, name: "Mr. 2" },
+    { id: 3, name: "Mr. 3" },
+    { id: 4, name: "Mr. 4" },
+    { id: 5, name: "Mr. 5" },
+    { id: 6, name: "Mr. 6" },
+    { id: 7, name: "Mr. 7" },
+    { id: 8, name: "Mr. 8" },
 ];
 
 export default function AdminSchedule() {
-    const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date("2025-03-21"), { weekStartsOn: 1 }));
+    const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date("2025-03-17"), { weekStartsOn: 1 }));
     const [selectedMonth, setSelectedMonth] = useState(startOfMonth(new Date()));
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [selectedCenter, setSelectedCenter] = useState(null);
-    const [isFormOpen, setIsFormOpen] = useState(false);
     const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
-    const [isConfirmed, setIsConfirmed] = useState(false);
     const [viewMode, setViewMode] = useState("week");
     const [schedules, setSchedules] = useState([]);
     const [profiles, setProfiles] = useState([]);
     const [orders, setOrders] = useState([]);
     const [centers, setCenters] = useState([]);
     const [packageVaccines, setPackageVaccines] = useState({});
-    const [formData, setFormData] = useState({ 
-        profileId: "", 
-        orderDetailId: "", 
-        type: "vaccine", 
-        vaccineId: "" 
-    });
     const [updateFormData, setUpdateFormData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [showBookAnotherChild, setShowBookAnotherChild] = useState(false);
     const [bookAnotherFormData, setBookAnotherFormData] = useState({
         profileId: "",
@@ -48,6 +36,8 @@ export default function AdminSchedule() {
         type: "vaccine",
         vaccineId: "",
     });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const today = new Date();
 
     useEffect(() => {
@@ -55,11 +45,12 @@ export default function AdminSchedule() {
             setLoading(true);
             try {
                 const [scheduleResponse, profileResponse, orderResponse, centerResponse] = await Promise.all([
-                    api.get("/api/VaccinationSchedule"), // Fetch all schedules (admin access)
-                    api.get("/api/ChildrenProfile"), // Fetch all children profiles (admin access)
-                    api.get("/api/Order?status=Paid"), // Fetch all paid orders (admin access)
+                    api.get("/api/VaccinationSchedule"),
+                    api.get("/api/ChildrenProfile"),
+                    api.get("/api/Order?status=Paid"),
                     api.get("/api/VaccineCenters"),
                 ]);
+                console.log("Schedules:", scheduleResponse.data);
                 setSchedules(scheduleResponse.data);
                 setProfiles(profileResponse.data);
                 setOrders(orderResponse.data);
@@ -94,17 +85,18 @@ export default function AdminSchedule() {
         if (!selectedCenter || profiles.length === 0) return [];
 
         const weekStart = selectedWeek;
-        return HOURS.map(hour => ({
+        const slots = HOURS.map(hour => ({
             hour,
             days: DAYS.map((_, dayIndex) => {
                 const slotDate = addDays(weekStart, dayIndex);
                 const slotTime = `${format(slotDate, "yyyy-MM-dd")}T${hour}:00`;
 
                 const slotSchedules = schedules.filter(s => {
-                    const appointmentTime = s.appointmentDate;
+                    const appointmentTime = format(new Date(s.appointmentDate), "yyyy-MM-dd'T'HH:mm:ss");
                     const matchesTime = appointmentTime === slotTime;
                     const matchesCenter = s.vaccineCenterId === selectedCenter;
                     const isActive = s.status !== 0;
+                    console.log(`Slot ${slotTime} - Schedule:`, { appointmentTime, matchesTime, matchesCenter, isActive });
                     return matchesTime && matchesCenter && isActive;
                 });
 
@@ -114,25 +106,77 @@ export default function AdminSchedule() {
                     booked: slotSchedules.length > 0,
                     isPast,
                     schedules: slotSchedules,
+                    isInteractive: !isPast || (isPast && slotSchedules.length > 0),
                 };
             }),
         }));
+        console.log("Week Slots:", slots);
+        return slots;
     }, [selectedCenter, selectedWeek, schedules, profiles]);
 
     const getAvailableSlotsForUpdate = () => {
         const availableSlots = [];
-        getWeekSlots.forEach(({ hour, days }) => {
-            days.forEach((slot, dayIndex) => {
-                if (!slot.isPast && !slot.booked) {
-                    const slotDate = addDays(selectedWeek, dayIndex);
+
+        // Helper function to calculate slots for a given week
+        const calculateWeekSlots = (weekStart) => {
+            return HOURS.map(hour => ({
+                hour,
+                days: DAYS.map((_, dayIndex) => {
+                    const slotDate = addDays(weekStart, dayIndex);
                     const slotTime = `${format(slotDate, "yyyy-MM-dd")}T${hour}:00`;
-                    availableSlots.push({
-                        value: slotTime,
-                        label: `${DAYS[dayIndex]} ${format(slotDate, "MMM d")} at ${hour}`,
+
+                    const slotSchedules = schedules.filter(s => {
+                        const appointmentTime = format(new Date(s.appointmentDate), "yyyy-MM-dd'T'HH:mm:ss");
+                        const matchesTime = appointmentTime === slotTime;
+                        const matchesCenter = s.vaccineCenterId === selectedCenter;
+                        const isActive = s.status !== 0;
+                        return matchesTime && matchesCenter && isActive;
                     });
-                }
+
+                    const isPast = isBefore(slotDate, today) && !isEqual(slotDate, today);
+                    return {
+                        available: !isPast && slotSchedules.length === 0,
+                        booked: slotSchedules.length > 0,
+                        isPast,
+                        schedules: slotSchedules,
+                        isInteractive: !isPast || (isPast && slotSchedules.length > 0),
+                    };
+                }),
+            }));
+        };
+
+        // Get slots for the current week
+        const currentWeekSlots = getWeekSlots;
+
+        // Get slots for the next week
+        const nextWeekStart = addDays(selectedWeek, 7);
+        const nextWeekSlots = calculateWeekSlots(nextWeekStart);
+
+        // Combine slots from both weeks
+        const allWeekSlots = [
+            { weekStart: selectedWeek, slots: currentWeekSlots },
+            { weekStart: nextWeekStart, slots: nextWeekSlots },
+        ];
+
+        // Populate available slots from both weeks
+        allWeekSlots.forEach(({ weekStart, slots }) => {
+            slots.forEach(({ hour, days }) => {
+                days.forEach((slot, dayIndex) => {
+                    if (!slot.booked) {
+                        const slotDate = addDays(weekStart, dayIndex);
+                        const slotTime = `${format(slotDate, "yyyy-MM-dd")}T${hour}:00`;
+                        availableSlots.push({
+                            value: slotTime,
+                            label: `${DAYS[dayIndex]} ${format(slotDate, "MMM d")} at ${hour}`,
+                        });
+                    }
+                });
             });
         });
+
+        // Sort slots chronologically
+        availableSlots.sort((a, b) => new Date(a.value) - new Date(b.value));
+
         return availableSlots;
     };
 
@@ -142,11 +186,13 @@ export default function AdminSchedule() {
             start: startOfMonth(selectedMonth),
             end: endOfMonth(selectedMonth),
         });
-        return daysInMonth.map(date => {
-            const daySchedules = schedules.filter(s =>
-                new Date(s.appointmentDate).toDateString() === date.toDateString() &&
-                s.vaccineCenterId === selectedCenter
-            );
+        const slots = daysInMonth.map(date => {
+            const daySchedules = schedules.filter(s => {
+                const matchesDate = new Date(s.appointmentDate).toDateString() === date.toDateString();
+                const matchesCenter = s.vaccineCenterId === selectedCenter;
+                console.log(`Day ${date.toDateString()} - Schedule:`, { appointmentDate: s.appointmentDate, matchesDate, matchesCenter });
+                return matchesDate && matchesCenter;
+            });
             const isPast = isBefore(date, today) && !isEqual(date, today);
             return {
                 date,
@@ -155,6 +201,8 @@ export default function AdminSchedule() {
                 isPast,
             };
         });
+        console.log("Month Slots:", slots);
+        return slots;
     };
 
     const isDoseBooked = (profileId, orderDetailId, doseNumber) => {
@@ -168,13 +216,9 @@ export default function AdminSchedule() {
 
     const handleSlotSelect = (dayIndex, hour) => {
         const slot = getWeekSlots.find(s => s.hour === hour).days[dayIndex];
-        if (slot.isPast || isConfirmed) return;
 
         setSelectedSlot({ dayIndex, hour });
-        if (slot.available) {
-            setIsFormOpen(true);
-            setIsUpdateFormOpen(false);
-        } else if (slot.booked) {
+        if (slot.booked) {
             const schedule = slot.schedules[0];
             setUpdateFormData({
                 id: schedule.id,
@@ -186,54 +230,42 @@ export default function AdminSchedule() {
                 administeredBy: schedule.administeredBy,
             });
             setIsUpdateFormOpen(true);
-            setIsFormOpen(false);
         }
     };
 
-    const handleFormSubmit = async (e) => {
+    const handleUpdateFormSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedSlot || !formData.profileId || !formData.orderDetailId) return;
+        if (!updateFormData) return;
 
-        const slotDate = addDays(selectedWeek, selectedSlot.dayIndex);
-        const appointmentDate = `${format(slotDate, "yyyy-MM-dd")}T${selectedSlot.hour}:00`;
-        const orderDetail = orders
-            .flatMap(o => [...o.vaccineDetails, ...o.packageDetails])
-            .find(d => (d.orderVaccineId || d.orderPackageId) === formData.orderDetailId);
-        const isPackage = formData.type === "package";
-        const existingSchedules = schedules.filter(s => 
-            s.profileId === formData.profileId &&
-            (s.orderVaccineDetailsId === (isPackage ? null : formData.orderDetailId) ||
-             s.orderPackageDetailsId === (isPackage ? formData.orderDetailId : null)) &&
-            s.status !== 0
-        );
-        const doseNumber = isPackage ? (existingSchedules.length + 1) : 1;
-
-        if (isDoseBooked(formData.profileId, formData.orderDetailId, doseNumber)) {
-            alert(`Schedule already exists for this child for Dose ${doseNumber}. Please select a different vaccine/package or cancel the existing booking.`);
+        if (!updateFormData.appointmentDate) {
+            alert("Please select a new appointment date and time.");
             return;
         }
 
         try {
-            const request = {
-                id: crypto.randomUUID(),
-                profileId: formData.profileId,
-                vaccineCenterId: selectedCenter,
-                orderVaccineDetailsId: !isPackage ? formData.orderDetailId : null,
-                orderPackageDetailsId: isPackage ? formData.orderDetailId : null,
-                vaccineId: isPackage ? formData.vaccineId : orderDetail.vaccineId,
-                doseNumber,
-                appointmentDate,
-                actualDate: null,
-                administeredBy: null,
-                status: 1,
+            const updatedSchedule = {
+                DoseNumber: schedules.find(s => s.id === updateFormData.id)?.doseNumber || 1,
+                AppointmentDate: updateFormData.appointmentDate,
+                ActualDate: schedules.find(s => s.id === updateFormData.id)?.actualDate || null,
+                AdministeredBy: updateFormData.administeredBy || null,
+                Status: schedules.find(s => s.id === updateFormData.id)?.status || 1,
             };
-            const response = await api.post("/api/VaccinationSchedule", request);
-            setSchedules(prev => [...prev, response.data]);
-            setIsFormOpen(false);
-            setIsConfirmed(true);
+
+            const response = await api.put(`/api/VaccinationSchedule?scheduleId=${updateFormData.id}`, updatedSchedule);
+            setSchedules(prev =>
+                prev.map(s =>
+                    s.id === updateFormData.id
+                        ? { ...s, appointmentDate: updateFormData.appointmentDate, administeredBy: updateFormData.administeredBy }
+                        : s
+                )
+            );
+            alert("Schedule updated successfully!");
+            setIsUpdateFormOpen(false);
+            setUpdateFormData(null);
+            setSelectedSlot(null);
         } catch (err) {
-            console.error("Booking Error:", err.response?.status, err.response?.data || err.message);
-            alert(err.response?.data?.Message || "Failed to book schedule");
+            console.error("Update Error:", err.response?.status, err.response?.data || err.message);
+            alert(err.response?.data?.Message || "Failed to update schedule");
         }
     };
 
@@ -280,8 +312,14 @@ export default function AdminSchedule() {
                 administeredBy: null,
                 status: 1,
             };
+            console.log("Book Another Child Request:", request);
             const response = await api.post("/api/VaccinationSchedule", request);
-            setSchedules(prev => [...prev, response.data]);
+            console.log("Book Another Child Response:", response.data);
+            setSchedules(prev => {
+                const newSchedules = [...prev, response.data];
+                console.log("Updated Schedules:", newSchedules);
+                return newSchedules;
+            });
             setShowBookAnotherChild(false);
             setBookAnotherFormData({ profileId: "", orderDetailId: "", type: "vaccine", vaccineId: "" });
             alert("Successfully booked for another child!");
@@ -289,53 +327,6 @@ export default function AdminSchedule() {
             console.error("Book Another Child Error:", err.response?.status, err.response?.data || err.message);
             alert(err.response?.data?.Message || "Failed to book schedule for another child");
         }
-    };
-
-    const handleUpdateFormSubmit = async (e) => {
-        e.preventDefault();
-        if (!updateFormData) return;
-
-        if (!updateFormData.appointmentDate) {
-            alert("Please select a new appointment date and time.");
-            return;
-        }
-
-        try {
-            const updatedSchedule = {
-                DoseNumber: schedules.find(s => s.id === updateFormData.id)?.doseNumber || 1,
-                AppointmentDate: updateFormData.appointmentDate,
-                ActualDate: schedules.find(s => s.id === updateFormData.id)?.actualDate || null,
-                AdministeredBy: updateFormData.administeredBy || null,
-                Status: schedules.find(s => s.id === updateFormData.id)?.status || 1,
-            };
-
-            const response = await api.put(`/api/VaccinationSchedule?scheduleId=${updateFormData.id}`, updatedSchedule);
-            setSchedules(prev =>
-                prev.map(s =>
-                    s.id === updateFormData.id
-                        ? { ...s, appointmentDate: updateFormData.appointmentDate, administeredBy: updateFormData.administeredBy }
-                        : s
-                )
-            );
-            alert("Schedule updated successfully!");
-            setIsUpdateFormOpen(false);
-            setUpdateFormData(null);
-            setSelectedSlot(null);
-        } catch (err) {
-            console.error("Update Error:", err.response?.status, err.response?.data || err.message);
-            alert(err.response?.data?.Message || "Failed to update schedule");
-        }
-    };
-
-    const handleReset = () => {
-        setSelectedSlot(null);
-        setIsFormOpen(false);
-        setIsUpdateFormOpen(false);
-        setIsConfirmed(false);
-        setFormData({ profileId: "", orderDetailId: "", type: "vaccine", vaccineId: "" });
-        setUpdateFormData(null);
-        setShowBookAnotherChild(false);
-        setBookAnotherFormData({ profileId: "", orderDetailId: "", type: "vaccine", vaccineId: "" });
     };
 
     const renderWeekDays = () => {
@@ -356,35 +347,43 @@ export default function AdminSchedule() {
             <div key={hour} className="slot-row flex items-center mb-2">
                 <div className="time-label w-20 text-center font-semibold text-gray-700">{hour}</div>
                 <div className="slots-grid flex-1 grid grid-cols-7 gap-2">
-                    {days.map((slot, dayIndex) => (
-                        <button
-                            key={dayIndex}
-                            className={`slot-card p-2 rounded text-center transition-colors ${
-                                slot.isPast
-                                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    {days.map((slot, dayIndex) => {
+                        const isDisabled = !slot.isInteractive;
+                        console.log(`Slot ${hour} on ${DAYS[dayIndex]}:`, { isPast: slot.isPast, booked: slot.booked, isInteractive: slot.isInteractive, isDisabled });
+                        return (
+                            <button
+                                key={dayIndex}
+                                className={`slot-card p-2 rounded text-center transition-colors ${
+                                    slot.isPast && !slot.booked
+                                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                        : slot.booked
+                                        ? "slot-booked"
+                                        : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                }`}
+                                onClick={() => handleSlotSelect(dayIndex, hour)}
+                                disabled={isDisabled}
+                            >
+                                {slot.isPast && !slot.booked
+                                    ? "Past"
                                     : slot.booked
-                                    ? "slot-booked"
-                                    : "bg-green-100 text-green-800 hover:bg-green-200"
-                            }`}
-                            onClick={() => handleSlotSelect(dayIndex, hour)}
-                            disabled={slot.isPast || isConfirmed}
-                        >
-                            {slot.isPast ? "Past" : slot.booked ? `Booked (${slot.schedules.length} child${slot.schedules.length > 1 ? "ren" : ""})` : "Available"}
-                            {slot.booked && (
-                                <div className="text-xs mt-1">
-                                    {slot.schedules.map(s => {
-                                        const profile = profiles.find(p => p.id === s.profileId);
-                                        const doctor = DOCTORS.find(d => d.id === parseInt(s.administeredBy));
-                                        return (
-                                            <div key={s.id}>
-                                                {profile?.fullName || "Unknown Child"} - {doctor?.name || "No Doctor"}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </button>
-                    ))}
+                                    ? `Booked (${slot.schedules.length} child${slot.schedules.length > 1 ? "ren" : ""})`
+                                    : "Available"}
+                                {slot.booked && (
+                                    <div className="text-xs mt-1">
+                                        {slot.schedules.map(s => {
+                                            const profile = profiles.find(p => p.id === s.profileId);
+                                            const doctor = DOCTORS.find(d => d.id === parseInt(s.administeredBy));
+                                            return (
+                                                <div key={s.id}>
+                                                    {profile?.fullName || "Unknown Child"} - {doctor?.name || "No Doctor"}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
         ));
@@ -421,11 +420,11 @@ export default function AdminSchedule() {
                                     : availability?.isPast
                                     ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                                     : availability?.available
-                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                                     : "month-day-booked"
                             }`}
-                            onClick={() => isCurrentMonth && !availability?.isPast && availability?.available && handleDaySelect(date)}
-                            disabled={!isCurrentMonth || availability?.isPast || !availability?.available}
+                            onClick={() => isCurrentMonth && !availability?.isPast && !availability?.available && handleDaySelect(date)}
+                            disabled={!isCurrentMonth || availability?.isPast || availability?.available}
                         >
                             {format(date, "d")}
                             {availability?.bookedCount > 0 && (
@@ -442,109 +441,7 @@ export default function AdminSchedule() {
         setSelectedWeek(startOfWeek(date, { weekStartsOn: 1 }));
         setViewMode("week");
         setSelectedSlot(null);
-        setIsFormOpen(false);
         setIsUpdateFormOpen(false);
-        setIsConfirmed(false);
-    };
-
-    const renderForm = () => {
-        const selectedOrderDetail = orders
-            .flatMap(o => [...o.vaccineDetails, ...o.packageDetails])
-            .find(d => (d.orderVaccineId || d.orderPackageId) === formData.orderDetailId);
-        const packageVaccineOptions = formData.type === "package" && selectedOrderDetail
-            ? packageVaccines[selectedOrderDetail.vaccinePackageId] || []
-            : [];
-
-        return (
-            <div className="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center">
-                <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md form-container">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Book Vaccination</h2>
-                    <form onSubmit={handleFormSubmit}>
-                        <div className="mb-5">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Child</label>
-                            <select
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                                value={formData.profileId}
-                                onChange={e => setFormData({ ...formData, profileId: e.target.value })}
-                                required
-                            >
-                                <option value="">Select Child</option>
-                                {profiles.map(p => (
-                                    <option key={p.id} value={p.id}>{p.fullName}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="mb-5">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Vaccine/Package</label>
-                            <div className="flex gap-3">
-                                <select
-                                    className="w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                                    value={formData.type}
-                                    onChange={e => setFormData({ ...formData, type: e.target.value, orderDetailId: "", vaccineId: "" })}
-                                >
-                                    <option value="vaccine">Vaccine</option>
-                                    <option value="package">Package</option>
-                                </select>
-                                <select
-                                    className="w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                                    value={formData.orderDetailId}
-                                    onChange={e => setFormData({ ...formData, orderDetailId: e.target.value, vaccineId: "" })}
-                                    required
-                                >
-                                    <option value="">Select {formData.type === "vaccine" ? "Vaccine" : "Package"}</option>
-                                    {orders.flatMap(o =>
-                                        formData.type === "vaccine"
-                                            ? (o.vaccineDetails || []).map(d => (
-                                                <option key={d.orderVaccineId} value={d.orderVaccineId}>
-                                                    {d.vaccineName} (Price: ${d.totalPrice}, Qty: {d.quantity})
-                                                </option>
-                                            ))
-                                            : (o.packageDetails || []).map(d => (
-                                                <option key={d.orderPackageId} value={d.orderPackageId}>
-                                                    {d.vaccinePackageName} (Price: ${d.totalPrice}, Qty: {d.quantity})
-                                                </option>
-                                            ))
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                        {formData.type === "package" && formData.orderDetailId && (
-                            <div className="mb-5">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Vaccine in Package</label>
-                                <select
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                                    value={formData.vaccineId}
-                                    onChange={e => setFormData({ ...formData, vaccineId: e.target.value })}
-                                    required
-                                >
-                                    <option value="">Select Vaccine</option>
-                                    {packageVaccineOptions.map(v => (
-                                        <option key={v.vaccineId} value={v.vaccineId}>
-                                            {v.vaccineName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                        <div className="flex justify-end gap-3">
-                            <button
-                                type="button"
-                                className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
-                                onClick={() => setIsFormOpen(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                Confirm
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        );
     };
 
     const renderUpdateForm = () => {
@@ -596,7 +493,7 @@ export default function AdminSchedule() {
                                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                 value={updateFormData.profileId}
                                 onChange={e => setUpdateFormData({ ...updateFormData, profileId: e.target.value })}
-                                required
+                                disabled
                             >
                                 <option value="">Select Child</option>
                                 {profiles.map(p => (
@@ -611,6 +508,7 @@ export default function AdminSchedule() {
                                     className="w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                     value={updateFormData.type}
                                     onChange={e => setUpdateFormData({ ...updateFormData, type: e.target.value, orderDetailId: "", vaccineId: "" })}
+                                    disabled
                                 >
                                     <option value="vaccine">Vaccine</option>
                                     <option value="package">Package</option>
@@ -619,7 +517,7 @@ export default function AdminSchedule() {
                                     className="w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                     value={updateFormData.orderDetailId}
                                     onChange={e => setUpdateFormData({ ...updateFormData, orderDetailId: e.target.value, vaccineId: "" })}
-                                    required
+                                    disabled
                                 >
                                     <option value="">Select {updateFormData.type === "vaccine" ? "Vaccine" : "Package"}</option>
                                     {orders.flatMap(o =>
@@ -645,7 +543,7 @@ export default function AdminSchedule() {
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                     value={updateFormData.vaccineId}
                                     onChange={e => setUpdateFormData({ ...updateFormData, vaccineId: e.target.value })}
-                                    required
+                                    disabled
                                 >
                                     <option value="">Select Vaccine</option>
                                     {packageVaccineOptions.map(v => (
@@ -696,6 +594,7 @@ export default function AdminSchedule() {
                                 ))}
                             </select>
                         </div>
+
                         <div className="mb-5">
                             <button
                                 type="button"
@@ -868,9 +767,7 @@ export default function AdminSchedule() {
                                 onClick={() => {
                                     setSelectedWeek(prev => addDays(prev, -7));
                                     setSelectedSlot(null);
-                                    setIsFormOpen(false);
                                     setIsUpdateFormOpen(false);
-                                    setIsConfirmed(false);
                                 }}
                             >
                                 Previous
@@ -883,9 +780,7 @@ export default function AdminSchedule() {
                                 onClick={() => {
                                     setSelectedWeek(prev => addDays(prev, 7));
                                     setSelectedSlot(null);
-                                    setIsFormOpen(false);
                                     setIsUpdateFormOpen(false);
-                                    setIsConfirmed(false);
                                 }}
                             >
                                 Next
@@ -898,9 +793,7 @@ export default function AdminSchedule() {
                                 onClick={() => {
                                     setSelectedMonth(prev => addDays(prev, -31));
                                     setSelectedSlot(null);
-                                    setIsFormOpen(false);
                                     setIsUpdateFormOpen(false);
-                                    setIsConfirmed(false);
                                 }}
                             >
                                 Previous
@@ -913,9 +806,7 @@ export default function AdminSchedule() {
                                 onClick={() => {
                                     setSelectedMonth(prev => addDays(prev, 31));
                                     setSelectedSlot(null);
-                                    setIsFormOpen(false);
                                     setIsUpdateFormOpen(false);
-                                    setIsConfirmed(false);
                                 }}
                             >
                                 Next
@@ -932,26 +823,10 @@ export default function AdminSchedule() {
                         {renderWeekDays()}
                     </div>
                     <div className="slots-container">{renderWeekSlots()}</div>
-                    {isConfirmed && (
-                        <div className="success-message mt-6 p-4 bg-green-100 rounded-lg text-center">
-                            <h2 className="text-xl font-semibold text-green-800">Booking Confirmed!</h2>
-                            <p className="text-gray-700">
-                                Vaccination scheduled for {DAYS[selectedSlot.dayIndex]}{" "}
-                                {format(addDays(selectedWeek, selectedSlot.dayIndex), "MMM d")} at {selectedSlot.hour}.
-                            </p>
-                            <button
-                                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                onClick={handleReset}
-                            >
-                                Book Another
-                            </button>
-                        </div>
-                    )}
                 </>
             ) : (
                 <div className="month-container">{renderMonthDays()}</div>
             )}
-            {isFormOpen && renderForm()}
             {isUpdateFormOpen && renderUpdateForm()}
         </div>
     );

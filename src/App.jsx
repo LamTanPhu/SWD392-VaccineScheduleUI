@@ -30,7 +30,7 @@ import VaccineManagePage from "./components/VaccineManagePage/VaccineManagePage"
 
 // Placeholder admin pages
 import AdminDashboard from "./components/admin/AdminDashboard";
-const AdminUsers = () => <h1>Users Management</h1>;
+import AdminUsers from "./components/admin/AdminUser";
 const AdminSettings = () => <h1>Settings</h1>;
 
 // PrivateRoute for admin/staff access only
