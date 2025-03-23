@@ -1,0 +1,64 @@
+.admin-orders-page {
+    padding: 20px;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #28a745, #1a3c34);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order-card {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.order-header h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-other {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.order-actions {
+    margin-top: 10px;
+    text-align: right;
+}
+
+.btn-animated {
+    transition: transform 0.2s ease-in-out, background-color 0.3s ease;
+}
+
+.btn-animated:hover {
+    transform: scale(1.05);
+    background-color: #e9ecef;
+}

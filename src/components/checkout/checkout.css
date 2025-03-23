@@ -1,0 +1,149 @@
+/* Existing checkout.css */
+.bg-primary {
+    background-color: #28a745;
+}
+
+.text-primary {
+    color: #28a745;
+}
+
+.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.checkout-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.checkout-input {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.checkout-input:focus {
+    border-color: #28a745;
+    outline: none;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
+.checkout-payment-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.checkout-product-image {
+    width: 80px;
+    height: 80px;
+    position: relative;
+}
+
+.checkout-quantity-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+.checkout-submit-btn {
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #28a745;
+    color: white;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.checkout-submit-btn:hover {
+    transform: scale(1.05);
+    background-color: #218838;
+}
+
+.card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 992px) {
+    .d-flex {
+        flex-direction: column;
+    }
+    .col-6 {
+        width: 100% !important;
+        padding: 0 15px !important;
+    }
+    .ps-5 {
+        padding-left: 0 !important;
+    }
+}
+
+/* Existing child details layout styles */
+.child-details-card .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.child-details-card .col-md-6 {
+    flex: 0 0 48%;
+    max-width: 48%;
+}
+
+@media (max-width: 768px) {
+    .child-details-card .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Updated styles for vaccine cards (without images) */
+.vaccine-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.vaccine-card:hover {
+    transform: scale(1.02);
+}
+
+.vaccine-card .card-body {
+    padding: 0.75rem; /* Reduced padding to make the card smaller */
+}
+
+.vaccine-card .card-title {
+    font-size: 1rem; /* Slightly smaller font size */
+    margin-bottom: 0.5rem;
+}
+
+.vaccine-card .card-text {
+    font-size: 0.875rem; /* Smaller text */
+    margin-bottom: 0.25rem;
+}
+
+.vaccine-card .card-footer {
+    background-color: #fff;
+    border-top: none;
+    padding: 0.5rem 0.75rem;
+}
+
+.vaccine-card .btn-danger {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
