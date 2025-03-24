@@ -5,7 +5,7 @@ import './adminStaffLayout.css';
 
 const AdminStaffLayout = ({ children }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isVaccineMenuOpen, setIsVaccineMenuOpen] = useState(false); // New state for submenu
+    const [isVaccineMenuOpen, setIsVaccineMenuOpen] = useState(false);
     const [username, setUsername] = useState('Admin');
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ const AdminStaffLayout = ({ children }) => {
     };
 
     const handleVaccineMenuToggle = () => {
-        setIsVaccineMenuOpen(!isVaccineMenuOpen); // Toggle submenu
+        setIsVaccineMenuOpen(!isVaccineMenuOpen);
     };
 
     const handleLogout = () => {
@@ -183,6 +183,17 @@ const AdminStaffLayout = ({ children }) => {
                             >
                                 <i className="fas fa-shopping-cart me-2"></i>
                                 <span>{!isSidebarCollapsed && 'Orders'}</span>
+                            </Link>
+                        </li>
+                        <li className="mb-3">
+                            <Link
+                                to="/admin/vaccine-history"
+                                className={`text-white text-decoration-none sidebar-link ${
+                                    location.pathname === '/admin/vaccine-history' ? 'active' : ''
+                                }`}
+                            >
+                                <i className="fas fa-history me-2"></i>
+                                <span>{!isSidebarCollapsed && 'Vaccine History'}</span>
                             </Link>
                         </li>
                         <li className="mb-3">
