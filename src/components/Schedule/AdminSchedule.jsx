@@ -22,6 +22,8 @@ export default function AdminSchedule() {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [selectedCenter, setSelectedCenter] = useState(null);
     const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
+    const [isSlotSchedulesFormOpen, setIsSlotSchedulesFormOpen] = useState(false);
+    const [selectedSlotSchedules, setSelectedSlotSchedules] = useState([]);
     const [viewMode, setViewMode] = useState("week");
     const [schedules, setSchedules] = useState([]);
     const [profiles, setProfiles] = useState([]);
@@ -117,7 +119,6 @@ export default function AdminSchedule() {
     const getAvailableSlotsForUpdate = () => {
         const availableSlots = [];
 
-        // Helper function to calculate slots for a given week
         const calculateWeekSlots = (weekStart) => {
             return HOURS.map(hour => ({
                 hour,
@@ -145,20 +146,15 @@ export default function AdminSchedule() {
             }));
         };
 
-        // Get slots for the current week
         const currentWeekSlots = getWeekSlots;
-
-        // Get slots for the next week
         const nextWeekStart = addDays(selectedWeek, 7);
         const nextWeekSlots = calculateWeekSlots(nextWeekStart);
 
-        // Combine slots from both weeks
         const allWeekSlots = [
             { weekStart: selectedWeek, slots: currentWeekSlots },
             { weekStart: nextWeekStart, slots: nextWeekSlots },
         ];
 
-        // Populate available slots from both weeks
         allWeekSlots.forEach(({ weekStart, slots }) => {
             slots.forEach(({ hour, days }) => {
                 days.forEach((slot, dayIndex) => {
@@ -174,7 +170,6 @@ export default function AdminSchedule() {
             });
         });
 
-        // Sort slots chronologically
         availableSlots.sort((a, b) => new Date(a.value) - new Date(b.value));
 
         return availableSlots;
@@ -219,17 +214,8 @@ export default function AdminSchedule() {
 
         setSelectedSlot({ dayIndex, hour });
         if (slot.booked) {
-            const schedule = slot.schedules[0];
-            setUpdateFormData({
-                id: schedule.id,
-                profileId: schedule.profileId,
-                orderDetailId: schedule.orderVaccineDetailsId || schedule.orderPackageDetailsId,
-                type: schedule.orderVaccineDetailsId ? "vaccine" : "package",
-                vaccineId: schedule.vaccineId,
-                appointmentDate: schedule.appointmentDate,
-                administeredBy: schedule.administeredBy,
-            });
-            setIsUpdateFormOpen(true);
+            setSelectedSlotSchedules(slot.schedules);
+            setIsSlotSchedulesFormOpen(true);
         }
     };
 
@@ -259,10 +245,17 @@ export default function AdminSchedule() {
                         : s
                 )
             );
+            setSelectedSlotSchedules(prev =>
+                prev.map(s =>
+                    s.id === updateFormData.id
+                        ? { ...s, appointmentDate: updateFormData.appointmentDate, administeredBy: updateFormData.administeredBy }
+                        : s
+                )
+            );
             alert("Schedule updated successfully!");
             setIsUpdateFormOpen(false);
             setUpdateFormData(null);
-            setSelectedSlot(null);
+            setIsSlotSchedulesFormOpen(true);
         } catch (err) {
             console.error("Update Error:", err.response?.status, err.response?.data || err.message);
             alert(err.response?.data?.Message || "Failed to update schedule");
@@ -320,6 +313,7 @@ export default function AdminSchedule() {
                 console.log("Updated Schedules:", newSchedules);
                 return newSchedules;
             });
+            setSelectedSlotSchedules(prev => [...prev, response.data]);
             setShowBookAnotherChild(false);
             setBookAnotherFormData({ profileId: "", orderDetailId: "", type: "vaccine", vaccineId: "" });
             alert("Successfully booked for another child!");
@@ -368,19 +362,6 @@ export default function AdminSchedule() {
                                     : slot.booked
                                     ? `Booked (${slot.schedules.length} child${slot.schedules.length > 1 ? "ren" : ""})`
                                     : "Available"}
-                                {slot.booked && (
-                                    <div className="text-xs mt-1">
-                                        {slot.schedules.map(s => {
-                                            const profile = profiles.find(p => p.id === s.profileId);
-                                            const doctor = DOCTORS.find(d => d.id === parseInt(s.administeredBy));
-                                            return (
-                                                <div key={s.id}>
-                                                    {profile?.fullName || "Unknown Child"} - {doctor?.name || "No Doctor"}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
                             </button>
                         );
                     })}
@@ -442,6 +423,178 @@ export default function AdminSchedule() {
         setViewMode("week");
         setSelectedSlot(null);
         setIsUpdateFormOpen(false);
+        setIsSlotSchedulesFormOpen(false);
+        setSelectedSlotSchedules([]);
+    };
+
+    const handleMarkAsArrived = async (scheduleId) => {
+        if (!window.confirm("Are you sure you want to mark this child as arrived?")) return;
+    
+        try {
+            // Step 1: Update the schedule's status to Arrived (2)
+            const scheduleToUpdate = schedules.find(s => s.id === scheduleId);
+            if (!scheduleToUpdate) {
+                alert("Schedule not found.");
+                return;
+            }
+    
+            const currentDateTime = new Date().toISOString();
+            const updatedSchedule = {
+                ...scheduleToUpdate,
+                Status: 2, // Update status to Arrived
+                ActualDate: currentDateTime, // Set the actual date to the current time
+            };
+    
+            const scheduleResponse = await api.put(`/api/VaccinationSchedule?scheduleId=${scheduleId}`, updatedSchedule);
+            setSchedules(prev =>
+                prev.map(s =>
+                    s.id === scheduleId ? { ...s, status: 2, actualDate: currentDateTime } : s
+                )
+            );
+            setSelectedSlotSchedules(prev =>
+                prev.map(s =>
+                    s.id === scheduleId ? { ...s, status: 2, actualDate: currentDateTime } : s
+                )
+            );
+    
+            // Step 2: Determine the VaccineId
+            let vaccineId = scheduleToUpdate.vaccineId;
+    
+            // If vaccineId is not directly available, derive it from order details
+            if (!vaccineId) {
+                let orderDetail = null;
+                if (scheduleToUpdate.orderVaccineDetailsId) {
+                    // Single vaccine schedule
+                    orderDetail = orders
+                        .flatMap(o => o.vaccineDetails || [])
+                        .find(d => d.orderVaccineId === scheduleToUpdate.orderVaccineDetailsId);
+                    if (orderDetail) {
+                        vaccineId = orderDetail.vaccineId;
+                    }
+                } else if (scheduleToUpdate.orderPackageDetailsId) {
+                    // Package schedule - vaccineId should already be set in scheduleToUpdate.vaccineId
+                    // But let's double-check by looking up the package details if needed
+                    orderDetail = orders
+                        .flatMap(o => o.packageDetails || [])
+                        .find(d => d.orderPackageId === scheduleToUpdate.orderPackageDetailsId);
+                    if (orderDetail && !vaccineId) {
+                        // If vaccineId is not set, we might need to fetch the specific vaccine from the package
+                        // However, in this case, vaccineId should already be set when the schedule was created
+                        throw new Error("VaccineId not found for package schedule.");
+                    }
+                }
+    
+                if (!vaccineId) {
+                    throw new Error("Unable to determine VaccineId for the schedule.");
+                }
+            }
+    
+            // Step 3: Create a VaccineHistory record
+            const vaccineHistoryRequest = {
+                VaccineId: vaccineId,
+                ProfileId: scheduleToUpdate.profileId,
+                CenterId: scheduleToUpdate.vaccineCenterId,
+                AdministeredDate: currentDateTime,
+                AdministeredBy: scheduleToUpdate.administeredBy || "Unknown",
+                Notes: "Vaccination completed upon arrival",
+                VaccinedStatus: 1, // Assuming 1 means "Vaccinated"
+                DosedNumber: scheduleToUpdate.doseNumber || 1,
+            };
+    
+            const historyResponse = await api.post("/api/VaccineHistory", vaccineHistoryRequest);
+            console.log("Vaccine History Created:", historyResponse.data);
+    
+            alert("Child marked as arrived and vaccine history recorded successfully!");
+        } catch (err) {
+            console.error("Mark as Arrived Error:", err.response?.status, err.response?.data || err.message);
+            alert(err.response?.data?.Message || err.message || "Failed to mark child as arrived or record vaccine history");
+        }
+    };
+
+    const renderSlotSchedulesForm = () => {
+        if (!selectedSlotSchedules.length) return null;
+
+        const slotDate = addDays(selectedWeek, selectedSlot.dayIndex);
+        const slotTime = `${format(slotDate, "MMM d, yyyy")} at ${selectedSlot.hour}`;
+
+        const handleEditSchedule = (schedule) => {
+            setUpdateFormData({
+                id: schedule.id,
+                profileId: schedule.profileId,
+                orderDetailId: schedule.orderVaccineDetailsId || schedule.orderPackageDetailsId,
+                type: schedule.orderVaccineDetailsId ? "vaccine" : "package",
+                vaccineId: schedule.vaccineId,
+                appointmentDate: schedule.appointmentDate,
+                administeredBy: schedule.administeredBy,
+            });
+            setIsSlotSchedulesFormOpen(false);
+            setIsUpdateFormOpen(true);
+        };
+
+        return (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center">
+                <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md form-container">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                        Schedules for {slotTime}
+                    </h2>
+                    <div className="mb-6">
+                        <p className="text-sm text-gray-600 mb-2">
+                            Total: {selectedSlotSchedules.length} child{selectedSlotSchedules.length > 1 ? "ren" : ""}
+                        </p>
+                        {selectedSlotSchedules.map(schedule => {
+                            const profile = profiles.find(p => p.id === schedule.profileId);
+                            const doctor = DOCTORS.find(d => d.id === parseInt(schedule.administeredBy));
+                            return (
+                                <div
+                                    key={schedule.id}
+                                    className="flex justify-between items-center p-3 mb-2 border border-gray-200 rounded-lg"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-800">
+                                            {profile?.fullName || "Unknown Child"}
+                                        </p>
+                                        <p className="text-xs text-gray-600">
+                                            Doctor: {doctor?.name || "No Doctor"}
+                                        </p>
+                                        <p className="text-xs text-gray-600">
+                                            Status: {schedule.status === 1 ? "Confirmed" : schedule.status === 2 ? "Arrived" : "Unknown"}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            className="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                            onClick={() => handleEditSchedule(schedule)}
+                                        >
+                                            Edit
+                                        </button>
+                                        {schedule.status === 1 && (
+                                            <button
+                                                className="px-4 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                                onClick={() => handleMarkAsArrived(schedule.id)}
+                                            >
+                                                Mark as Arrived
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="flex justify-end">
+                        <button
+                            className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors close-button"
+                            onClick={() => {
+                                setIsSlotSchedulesFormOpen(false);
+                                setSelectedSlotSchedules([]);
+                                setSelectedSlot(null);
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const renderUpdateForm = () => {
@@ -472,10 +625,15 @@ export default function AdminSchedule() {
                         s.id === updateFormData.id ? { ...s, status: 0 } : s
                     )
                 );
+                setSelectedSlotSchedules(prev => prev.filter(s => s.id !== updateFormData.id));
+                if (selectedSlotSchedules.length === 1) {
+                    setIsSlotSchedulesFormOpen(false);
+                    setSelectedSlotSchedules([]);
+                    setSelectedSlot(null);
+                }
                 alert("Schedule canceled successfully!");
                 setIsUpdateFormOpen(false);
                 setUpdateFormData(null);
-                setSelectedSlot(null);
             } catch (err) {
                 console.error("Cancel Error:", err.response?.status, err.response?.data || err.message);
                 alert(err.response?.data?.Message || "Failed to cancel schedule");
@@ -697,7 +855,7 @@ export default function AdminSchedule() {
                             )}
                         </div>
 
-                        <div className="flex justify-between gap-3">
+                        <div className="flex flex-wrap justify-between gap-3">
                             <button
                                 type="button"
                                 className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -705,17 +863,32 @@ export default function AdminSchedule() {
                             >
                                 Cancel Schedule
                             </button>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
                                 <button
                                     type="button"
-                                    className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
-                                    onClick={() => setIsUpdateFormOpen(false)}
+                                    className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                    onClick={() => {
+                                        setIsUpdateFormOpen(false);
+                                        setIsSlotSchedulesFormOpen(true);
+                                    }}
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    type="button"
+                                    className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                    onClick={() => {
+                                        setIsUpdateFormOpen(false);
+                                        setUpdateFormData(null);
+                                        setSelectedSlot(null);
+                                        setSelectedSlotSchedules([]);
+                                    }}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600/90 transition-colors"
                                 >
                                     Update
                                 </button>
@@ -768,6 +941,8 @@ export default function AdminSchedule() {
                                     setSelectedWeek(prev => addDays(prev, -7));
                                     setSelectedSlot(null);
                                     setIsUpdateFormOpen(false);
+                                    setIsSlotSchedulesFormOpen(false);
+                                    setSelectedSlotSchedules([]);
                                 }}
                             >
                                 Previous
@@ -781,6 +956,8 @@ export default function AdminSchedule() {
                                     setSelectedWeek(prev => addDays(prev, 7));
                                     setSelectedSlot(null);
                                     setIsUpdateFormOpen(false);
+                                    setIsSlotSchedulesFormOpen(false);
+                                    setSelectedSlotSchedules([]);
                                 }}
                             >
                                 Next
@@ -794,6 +971,8 @@ export default function AdminSchedule() {
                                     setSelectedMonth(prev => addDays(prev, -31));
                                     setSelectedSlot(null);
                                     setIsUpdateFormOpen(false);
+                                    setIsSlotSchedulesFormOpen(false);
+                                    setSelectedSlotSchedules([]);
                                 }}
                             >
                                 Previous
@@ -807,6 +986,8 @@ export default function AdminSchedule() {
                                     setSelectedMonth(prev => addDays(prev, 31));
                                     setSelectedSlot(null);
                                     setIsUpdateFormOpen(false);
+                                    setIsSlotSchedulesFormOpen(false);
+                                    setSelectedSlotSchedules([]);
                                 }}
                             >
                                 Next
@@ -827,6 +1008,7 @@ export default function AdminSchedule() {
             ) : (
                 <div className="month-container">{renderMonthDays()}</div>
             )}
+            {isSlotSchedulesFormOpen && renderSlotSchedulesForm()}
             {isUpdateFormOpen && renderUpdateForm()}
         </div>
     );

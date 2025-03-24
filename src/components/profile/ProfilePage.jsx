@@ -24,7 +24,7 @@ const Profile = () => {
                     email: response.data.email || "",
                     role: response.data.role || "",
                     status: response.data.status || "",
-                    phoneNumber: response.data.phoneNumber || "", // Added phoneNumber
+                    phoneNumber: response.data.phoneNumber || "",
                     vaccineCenter: response.data.vaccineCenter || null,
                     childrenProfiles: response.data.childrenProfiles || [],
                 };
@@ -136,6 +136,12 @@ const Profile = () => {
                                                 <p>
                                                     <strong>Address:</strong> {child.address || "N/A"}
                                                 </p>
+                                                <button
+                                                    className="btn btn-outline-primary btn-animated mt-2"
+                                                    onClick={() => navigate(`/vaccine-history/${child.id}`)}
+                                                >
+                                                    View Vaccine History
+                                                </button>
                                             </div>
                                         ))
                                     ) : (
