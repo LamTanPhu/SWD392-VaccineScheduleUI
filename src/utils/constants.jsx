@@ -1,51 +1,149 @@
-import Product1 from "./../assets/images/p1_1.png"
-import Product2 from "./../assets/images/p1.png"
-import Product3 from "./../assets/images/p3.png"
-import Product4 from "./../assets/images/p4.png"
-import Product5 from "./../assets/images/p5.png"
-import Product6 from "./../assets/images/p6.png"
+import Product1 from "./../assets/images/p1_1.png";
+import Product2 from "./../assets/images/p1.png";
+import Product3 from "./../assets/images/p3.png";
+import Product4 from "./../assets/images/p4.png";
+import Product5 from "./../assets/images/p5.png";
+import Product6 from "./../assets/images/p6.png";
+export const PRODUCT_TYPES = {
+  VACCINE_COMBO: {
+    name: "Gói vắc xin",
+    value: "VACCINE_COMBO",
+  },
+  VACCINE_SINGLE: {
+    name: "Vắc xin lẻ",
+    value: "VACCINE_SINGLE",
+  },
+};
+export const STATUS = {
+  SHOW: {
+    name: "Hiển thị",
+    value: "SHOW",
+  },
+  HIDE: {
+    name: "Ẩn",
+    value: "HIDE",
+  },
+};
 
+export const CATEGORIES = [
+  {
+    id: 1,
+    name: "Vắc xin trẻ em",
+    children: [
+      {
+        id: 2,
+        name: "0-9 tháng",
+      },
+      {
+        id: 3,
+        name: "0-12 tháng",
+      },
+      {
+        id: 4,
+        name: "6-24 tháng",
+      },
+      {
+        id: 5,
+        name: "12-24 tháng",
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: "Vắc xin cho trẻ tiền học đường",
+    children: [
+      {
+        id: 7,
+        name: "4-6 tuổi",
+      },
+    ],
+  },
+  {
+    id: 8,
+    name: "Vắc xin cho tuổi vị thành niên và thanh niên",
+    children: [
+      {
+        id: 9,
+        name: "9-18 tuổi",
+      },
+    ],
+  },
+];
 export const PRODUCTS = [
   {
     id: 1,
     name: "VẮC XIN SỐT XUẤT HUYẾT",
     price: 2000000,
-    image_url: Product1
+    image_url: Product1,
+    type: PRODUCT_TYPES.VACCINE_COMBO.value,
+    categories: [3, 4, 9],
+    status: STATUS.SHOW.value,
   },
   {
     id: 2,
     name: "VẮC XIN PHẾ CẦU 23",
     price: 2000000,
-    image_url: Product2
+    image_url: Product2,
+    type: PRODUCT_TYPES.VACCINE_SINGLE.value,
+    categories: [7, 9],
+    status: STATUS.SHOW.value,
   },
   {
     id: 3,
     name: "VẮC XIN PHẾ CẦU 13",
     price: 2000000,
-    image_url: Product3
+    image_url: Product3,
+    type: PRODUCT_TYPES.VACCINE_SINGLE.value,
+    categories: [5],
+    status: STATUS.SHOW.value,
   },
   {
     id: 4,
     name: "VẮC XIN SỐT XUẤT HUYẾT",
     price: 2000000,
-    image_url: Product4
+    image_url: Product4,
+    type: PRODUCT_TYPES.VACCINE_SINGLE.value,
+    categories: [3, 4, 9],
+    status: STATUS.SHOW.value,
   },
   {
     id: 5,
     name: "VẮC XIN SỐT XUẤT HUYẾT",
     price: 2000000,
-    image_url: Product5
+    image_url: Product5,
+    type: PRODUCT_TYPES.VACCINE_SINGLE.value,
+    categories: [2],
+    status: STATUS.SHOW.value,
   },
   {
     id: 6,
     name: "VẮC XIN SỐT XUẤT HUYẾT",
     price: 2000000,
-    image_url: Product6
+    image_url: Product6,
+    type: PRODUCT_TYPES.VACCINE_SINGLE.value,
+    categories: [3],
+    status: STATUS.SHOW.value,
   },
 ];
 
-export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-export const HOURS = ["7:00", "9:00", "11:00", "13:00", "15:00", "17:00", "19:00"];
+export const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+export const HOURS = [
+  "7:00",
+  "9:00",
+  "11:00",
+  "13:00",
+  "15:00",
+  "17:00",
+  "19:00",
+];
 export const DOCTORS = [
   {
     id: 1,
@@ -79,7 +177,7 @@ export const DOCTORS = [
     id: 8,
     name: "Mr. 8",
   },
-]
+];
 export const RELATIONSHIPS = [
   {
     id: 1,
@@ -132,7 +230,7 @@ export const RELATIONSHIPS = [
   {
     id: 13,
     name: "Cùng hộ khẩu",
-  }
+  },
 ];
 
 export const VACCINATION_LIST = [
@@ -171,5 +269,46 @@ export const VACCINATION_STATUS = [
   {
     id: "done",
     name: "Đã tiêm",
+  },
+];
+
+export const FLAT_CATEGORIES = CATEGORIES.reduce((acc, category) => {
+  acc.push({
+    id: category.id,
+    name: category.name,
+    parentId: null,
+    isParent: true,
+  });
+
+  if (category.children) {
+    category.children.forEach((child) => {
+      acc.push({
+        id: child.id,
+        name: child.name,
+        parentId: category.id,
+        isParent: false,
+      });
+    });
+  }
+
+  return acc;
+}, []);
+
+export const USERS = [
+  {
+    id: 1,
+    fullName: "Minh Khang",
+    email: "minhkhang113@gmail.com",
+    phone: "0909581581",
+    address: " Long Đất - BRVT",
+    children: [
+      {
+        relationship: "1",
+        fullName: "Minh Minh",
+        gender: "male",
+        birthDate: "2020-01-18",
+        allergies: "No",
+      },
+    ],
   },
 ];
